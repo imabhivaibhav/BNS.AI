@@ -10,8 +10,8 @@ import torch
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
-    sections_data = json.load(f)
-
+        sections_data = json.load(f)
+    return sections_data
 
 sections_data = load_sections()
 
