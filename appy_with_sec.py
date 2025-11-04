@@ -39,10 +39,45 @@ section_embeddings = embed_sections(sections_data)
 # Streamlit UI
 # -----------------------
 st.markdown("""
-    <h1 style='font-family: Arial, sans-serif; color:#10A37F;'>WAL.AI</h1>
+    <style>
+        /* Center content and limit width */
+        .centered-container {
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Dark input area */
+        textarea.stTextArea>div>div>textarea {
+            background-color: #343541;
+            color: #d4d4d8;
+            border-radius: 8px;
+        }
+
+        /* Button style */
+        div.stButton>button {
+            background-color: #10A37F;
+            color: white;
+            border-radius: 8px;
+            padding: 0.5em 1em;
+        }
+
+        /* Dark page background */
+        .main {
+            background-color: #202123;
+            color: #d4d4d8;
+        }
+    </style>
+    <div class="centered-container">
+        <h1 style='font-family: Arial, sans-serif; color:#10A37F;'>WAL.AI</h1>
+    </div>
 """, unsafe_allow_html=True)
 
-user_case = st.text_area("Enter your case detail below...")
+# Center the text area
+with st.container():
+    st.markdown('<div class="centered-container">', unsafe_allow_html=True)
+    user_case = st.text_area("Enter your case detail below...")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if st.button("Find Matching Sections") and user_case.strip():
     query = user_case.lower().strip()
@@ -77,7 +112,7 @@ if st.button("Find Matching Sections") and user_case.strip():
         else:
             indices, scores = [], []
 
-    # Show results with dark-themed ChatGPT-style cards
+    # Show results with dark-themed centered cards
     if not indices:
         st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
     else:
@@ -86,7 +121,7 @@ if st.button("Find Matching Sections") and user_case.strip():
             sec = sections_data[idx]
             st.markdown(
                 f"""
-                <div style="
+                <div class="centered-container" style="
                     padding: 20px; 
                     border-radius: 12px; 
                     background-color: #343541; 
@@ -95,10 +130,7 @@ if st.button("Find Matching Sections") and user_case.strip():
                     box-shadow: 0 1px 3px rgba(0,0,0,0.5);
                     font-family: 'Arial', sans-serif;
                 ">
-                    <h3 style="
-                        color:#10A37F; 
-                        margin-bottom:5px;
-                    ">
+                    <h3 style="color:#10A37F; margin-bottom:5px;">
                         Section {sec.get('Section', '')}: {sec.get('Title', '')}
                     </h3>
                     <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
