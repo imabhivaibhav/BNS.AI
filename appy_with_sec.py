@@ -18,8 +18,9 @@ from nltk.tokenize import sent_tokenize
 # -----------------------
 @st.cache_data
 def load_sections():
-    with open("laws_sections.json", "r", encoding="utf-8") as f:
+     with open("laws_sections.json", "r", encoding="utf-8") as f:
     sections_data = json.load(f)
+
 
 sections_data = load_sections()
 
@@ -108,4 +109,5 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
 
