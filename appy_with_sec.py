@@ -4,9 +4,7 @@ import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-# -----------------------
-# Load dataset (cached)
-# -----------------------
+# Load dataset
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
@@ -15,9 +13,7 @@ def load_sections():
 
 sections_data = load_sections()
 
-# -----------------------
-# Load model (cached)
-# -----------------------
+# Load model
 @st.cache_resource
 def load_model():
     return SentenceTransformer('all-MiniLM-L6-v2')
@@ -25,9 +21,7 @@ def load_model():
 st.write("Loading model, please wait...")
 model = load_model()
 
-# -----------------------
-# Embed all section descriptions (cached)
-# -----------------------
+# Embed all section descriptions
 @st.cache_data
 def embed_sections(sections):
     texts = [sec["Description"] for sec in sections]
@@ -35,23 +29,26 @@ def embed_sections(sections):
 
 section_embeddings = embed_sections(sections_data)
 
-# -----------------------
 # Streamlit UI
-# -----------------------
+st.set_page_config(page_title="WAL.AI", layout="wide")
 st.title("WAL.AI")
+st.markdown(
+    "<p style='font-size:16px; color:gray;'>Enter your case details below to find relevant legal sections.</p>",
+    unsafe_allow_html=True
+)
+
 user_case = st.text_area("Enter your case detail below...")
 
 if st.button("Find Matching Sections") and user_case.strip():
     query = user_case.lower().strip()
     number = "".join(re.findall(r"\d+", query))
 
-    # 1️⃣ Direct section match
+    # Direct section match
     direct = [
         i for i, s in enumerate(sections_data)
         if number and number == "".join(re.findall(r"\d+", s.get("Section", "")))
     ]
 
-    # 2️⃣ If direct match found, skip semantic search
     if direct:
         indices = direct
         scores = [1.0] * len(indices)
@@ -60,13 +57,11 @@ if st.button("Find Matching Sections") and user_case.strip():
         user_emb = model.encode(query, convert_to_tensor=True)
         sims = util.cos_sim(user_emb, section_embeddings)[0]
 
-        # Sort and get top 10, then filter by similarity threshold
         top_k = 10
         best = torch.topk(sims, k=min(top_k, len(sims)))
         indices = best.indices.tolist()
         scores = best.values.tolist()
 
-        # Dynamic threshold – keep only strong matches
         threshold = max(0.55, float(torch.median(best.values)) + 0.03)
         filtered = [(i, s) for i, s in zip(indices, scores) if s >= threshold]
         if filtered:
@@ -74,19 +69,26 @@ if st.button("Find Matching Sections") and user_case.strip():
         else:
             indices, scores = [], []
 
-    # 3️⃣ Show Results
+    # Show results
     if not indices:
         st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
     else:
         st.subheader("Matched Sections:")
         for idx, score in zip(indices, scores):
             sec = sections_data[idx]
-            st.write("---")
-            st.write(f"**Section:** {sec.get('Section', '')}")
-            st.write(f"**Title:** {sec.get('Title', '')}")
-            st.write(f"**Punishment:** {sec.get('Punishment', '')}")
-            st.write(f"**Description:** {sec.get('Description', '')}")
-
-
-
-
+            st.markdown(
+                f"""
+                <div style="
+                    padding: 20px; 
+                    border-radius: 12px; 
+                    background-color: #f9f9f9; 
+                    margin-bottom: 15px; 
+                    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+                ">
+                    <h3 style="color:#0d6efd; margin-bottom:5px;">Section {sec.get('Section', '')}: {sec.get('Title', '')}</h3>
+                    <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
+                    <p><b>Description:</b> {sec.get('Description', '')}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
