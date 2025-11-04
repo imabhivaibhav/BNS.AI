@@ -1,17 +1,19 @@
-without makeing interfere with technical things, make title in centre use chatgpt theme and style do it: import json
+
+import json
 import re
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
 
+
+
 # -----------------------
-# Load dataset (cached)
+# Load dataset
 # -----------------------
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
-        sections_data = json.load(f)
-    return sections_data
+        return json.load(f)
 
 sections_data = load_sections()
 
@@ -41,7 +43,7 @@ section_embeddings = embed_sections(sections_data)
 # -----------------------
 # Streamlit UI
 # -----------------------
-st.title("WAL.AI")
+st.title("BEL.AI")
 user_case = st.text_area("Enter your case description or section number:")
 
 if st.button("Find Matching Sections") and user_case.strip():
