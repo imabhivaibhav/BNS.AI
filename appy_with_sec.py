@@ -5,16 +5,6 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 
 # -----------------------
-# Page configuration
-# -----------------------
-st.set_page_config(
-    page_title="WAL.AI",
-    page_icon="⚖️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# -----------------------
 # Load dataset (cached)
 # -----------------------
 @st.cache_data
@@ -31,13 +21,8 @@ sections_data = load_sections()
 def load_model():
     return SentenceTransformer('all-MiniLM-L6-v2')
 
-st.sidebar.write("⚖️ **WAL.AI Legal Search**")
-st.sidebar.info("Enter your case description or section number to find relevant legal sections.")
-
-st.write("### Welcome to WAL.AI")
-st.write("Describe your case below and find the matching law sections instantly.")
-
-st.write("---")
+st.write("Loading model, please wait...")
+model = load_model()
 
 # -----------------------
 # Embed all section descriptions (cached)
@@ -47,13 +32,37 @@ def embed_sections(sections):
     texts = [sec["Description"] for sec in sections]
     return model.encode(texts, convert_to_tensor=True)
 
-model = load_model()
 section_embeddings = embed_sections(sections_data)
 
 # -----------------------
-# User input
+# Streamlit UI
 # -----------------------
-user_case = st.text_area("Enter your case detail:", height=150)
+st.set_page_config(page_title="WAL.AI", layout="wide")
+st.title("⚖️ WAL.AI - Legal Section Finder")
+st.markdown("Enter your case details below. WAL.AI will find relevant legal sections.")
+
+user_case = st.text_area("Case details", height=150)
+
+def display_section_card(sec, score=None):
+    """Display a section with a card-like style."""
+    html_score = f"<p style='color:green; font-weight:bold;'>Similarity: {score:.2f}</p>" if score else ""
+    st.markdown(
+        f"""
+        <div style="
+            padding: 15px; 
+            border-radius: 10px; 
+            background-color: #f9f9f9; 
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        ">
+            <h3 style='color:#2F4F4F'>{sec.get('Section', '')} - {sec.get('Title', '')}</h3>
+            {html_score}
+            <p><strong>Punishment:</strong> {sec.get('Punishment', 'N/A')}</p>
+            <p>{sec.get('Description', '')}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 if st.button("Find Matching Sections") and user_case.strip():
     query = user_case.lower().strip()
@@ -73,11 +82,11 @@ if st.button("Find Matching Sections") and user_case.strip():
         user_emb = model.encode(query, convert_to_tensor=True)
         sims = util.cos_sim(user_emb, section_embeddings)[0]
 
-        # Top 10 and threshold filter
         top_k = 10
         best = torch.topk(sims, k=min(top_k, len(sims)))
         indices = best.indices.tolist()
         scores = best.values.tolist()
+
         threshold = max(0.55, float(torch.median(best.values)) + 0.03)
         filtered = [(i, s) for i, s in zip(indices, scores) if s >= threshold]
         if filtered:
@@ -85,20 +94,11 @@ if st.button("Find Matching Sections") and user_case.strip():
         else:
             indices, scores = [], []
 
-    # 3️⃣ Display results nicely
+    # 3️⃣ Display results
     if not indices:
         st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
     else:
-        st.subheader(f"Matched Sections ({len(indices)})")
+        st.subheader("Matched Sections:")
         for idx, score in zip(indices, scores):
             sec = sections_data[idx]
-            with st.container():
-                st.markdown(
-                    f"""
-                    <div style="padding:15px; border-radius:10px; background-color:#f2f2f7; margin-bottom:10px;">
-                        <h4 style="color:#0d6efd;">Section {sec.get('Section', '')}: {sec.get('Title', '')}</h4>
-                        <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
-                        <p><b>Description:</b> {sec.get('Description', '')}</p>
-                    </div>
-                    """, unsafe_allow_html=True
-                )
+            display_section_card(sec, score)
