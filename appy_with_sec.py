@@ -72,7 +72,7 @@ st.markdown(
         text-align: center;
         color: #28a745;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 70px;
+        font-size: 150px;
         font-weight: bold;
         text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
     '>
@@ -141,6 +141,7 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
 
 
 
