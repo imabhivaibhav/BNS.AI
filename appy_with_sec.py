@@ -81,7 +81,17 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+st.markdown(
+    """
+    <div style="font-weight:bold; font-size:18px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-bottom:5px;">
+        Enter your case description or section number:
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
+# Text area with empty label
+user_case = st.text_area("", height=150)
 
 user_case = st.text_area("Enter your case description or section number:")
 
@@ -141,6 +151,7 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
 
 
 
