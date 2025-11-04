@@ -1,12 +1,3 @@
-import subprocess
-import sys
-
-# Force install packages in the running environment
-subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-subprocess.check_call([sys.executable, "-m", "pip", "install", "torch"])
-subprocess.check_call([sys.executable, "-m", "pip", "install", "sentence-transformers"])
-
-
 import json
 import re
 import streamlit as st
@@ -95,4 +86,5 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Title:** {sec.get('Title', '')}")
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
+
 
