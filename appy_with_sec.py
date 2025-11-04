@@ -1,15 +1,13 @@
-
 import json
 import re
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
 import nltk
-
+from datetime import datetime
 
 nltk.download('punkt')
 nltk.download('punkt_tab')
-
 from nltk.tokenize import sent_tokenize
 
 # -----------------------
@@ -29,7 +27,27 @@ sections_data = load_sections()
 def load_model():
     return SentenceTransformer('all-MiniLM-L6-v2')
 
-st.write("Loading model, please wait...")
+# -----------------------
+# ChatGPT-style Welcome
+# -----------------------
+today = datetime.now().strftime("%A, %B %d, %Y")
+st.markdown(
+    f"""
+    <div style="
+        background-color:#343541;
+        padding:20px;
+        border-radius:12px;
+        color:#f5f5f5;
+        font-size:20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        box-shadow: 2px 2px 12px rgba(0,0,0,0.3);
+    ">
+        👋 Welcome to WAL.AI! Today is {today}.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 model = load_model()
 
 # -----------------------
@@ -107,4 +125,3 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
-
