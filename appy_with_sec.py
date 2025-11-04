@@ -1,17 +1,24 @@
+
 import json
 import re
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
+import nltk
+
+
+nltk.download('punkt')
+nltk.download('punkt_tab')
+
+from nltk.tokenize import sent_tokenize
 
 # -----------------------
-# Load dataset (cached)
+# Load dataset
 # -----------------------
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
-        sections_data = json.load(f)
-    return sections_data
+        return json.load(f)
 
 sections_data = load_sections()
 
