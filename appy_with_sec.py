@@ -42,7 +42,7 @@ st.markdown(
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         box-shadow: 2px 2px 12px rgba(0,0,0,0.3);
     ">
-        👋 Welcome to WAL.AI! Today is {today}.
+        👋 Welcome to WAL.AI!  {today}.
     </div>
     """,
     unsafe_allow_html=True
@@ -125,3 +125,4 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
