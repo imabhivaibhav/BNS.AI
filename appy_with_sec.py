@@ -10,7 +10,8 @@ import torch
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+        sections_data = json.load(f)
+    return sections_data
 
 sections_data = load_sections()
 
@@ -37,32 +38,14 @@ section_embeddings = embed_sections(sections_data)
 # -----------------------
 # Streamlit UI
 # -----------------------
-st.set_page_config(page_title="WAL.AI", layout="wide")
-st.title("⚖️ WAL.AI - Legal Section Finder")
-st.markdown("Enter your case details below. WAL.AI will find relevant legal sections.")
+st.set_page_config(page_title="WAL.AI", layout="wide")  # full-width layout
+st.title("WAL.AI")
+st.markdown(
+    "<p style='font-size:16px; color:gray;'>Enter your case details below to find relevant legal sections.</p>",
+    unsafe_allow_html=True
+)
 
-user_case = st.text_area("Case details", height=150)
-
-def display_section_card(sec, score=None):
-    """Display a section with a card-like style."""
-    html_score = f"<p style='color:green; font-weight:bold;'>Similarity: {score:.2f}</p>" if score else ""
-    st.markdown(
-        f"""
-        <div style="
-            padding: 15px; 
-            border-radius: 10px; 
-            background-color: #f9f9f9; 
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        ">
-            <h3 style='color:#2F4F4F'>{sec.get('Section', '')} - {sec.get('Title', '')}</h3>
-            {html_score}
-            <p><strong>Punishment:</strong> {sec.get('Punishment', 'N/A')}</p>
-            <p>{sec.get('Description', '')}</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+user_case = st.text_area("Enter your case detail below...")
 
 if st.button("Find Matching Sections") and user_case.strip():
     query = user_case.lower().strip()
@@ -74,19 +57,22 @@ if st.button("Find Matching Sections") and user_case.strip():
         if number and number == "".join(re.findall(r"\d+", s.get("Section", "")))
     ]
 
-    # 2️⃣ Semantic search if no direct match
+    # 2️⃣ If direct match found, skip semantic search
     if direct:
         indices = direct
         scores = [1.0] * len(indices)
     else:
+        # Semantic search
         user_emb = model.encode(query, convert_to_tensor=True)
         sims = util.cos_sim(user_emb, section_embeddings)[0]
 
+        # Sort and get top 10, then filter by similarity threshold
         top_k = 10
         best = torch.topk(sims, k=min(top_k, len(sims)))
         indices = best.indices.tolist()
         scores = best.values.tolist()
 
+        # Dynamic threshold – keep only strong matches
         threshold = max(0.55, float(torch.median(best.values)) + 0.03)
         filtered = [(i, s) for i, s in zip(indices, scores) if s >= threshold]
         if filtered:
@@ -94,11 +80,26 @@ if st.button("Find Matching Sections") and user_case.strip():
         else:
             indices, scores = [], []
 
-    # 3️⃣ Display results
+    # 3️⃣ Show Results with improved appearance
     if not indices:
         st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
     else:
         st.subheader("Matched Sections:")
         for idx, score in zip(indices, scores):
             sec = sections_data[idx]
-            display_section_card(sec, score)
+            st.markdown(
+                f"""
+                <div style="
+                    padding: 20px; 
+                    border-radius: 12px; 
+                    background-color: #f9f9f9; 
+                    margin-bottom: 15px; 
+                    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+                ">
+                    <h3 style="color:#0d6efd; margin-bottom:5px;">Section {sec.get('Section', '')}: {sec.get('Title', '')}</h3>
+                    <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
+                    <p><b>Description:</b> {sec.get('Description', '')}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
