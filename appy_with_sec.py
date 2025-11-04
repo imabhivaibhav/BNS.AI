@@ -34,13 +34,12 @@ today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(
     f"""
     <div style="
-        background-color:#000000;  /* changed to black */
         padding:20px;
         border-radius:12px;
-        color:#28a745;  /* green text to match title */
+        color:#666666;  /* slightly lighter than background */
         font-size:20px;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        box-shadow: 2px 2px 12px rgba(0,0,0,0.3);
+        box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
         text-align: center;
     ">
         👋 Welcome to WAL.AI! {today}.
@@ -142,6 +141,7 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
 
 
 
