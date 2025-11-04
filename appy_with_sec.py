@@ -3,6 +3,10 @@ import re
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
+import nltk
+nltk.download('punkt')
+from nltk.tokenize import sent_tokenize
+
 
 # -----------------------
 # Load dataset (cached)
@@ -100,3 +104,4 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
