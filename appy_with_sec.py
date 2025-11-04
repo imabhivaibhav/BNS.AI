@@ -39,7 +39,7 @@ section_embeddings = embed_sections(sections_data)
 # Streamlit UI
 # -----------------------
 st.markdown("""
-    <h1 style='font-family: Arial, sans-serif; color:#0d6efd;'>WAL.AI</h1>
+    <h1 style='font-family: Arial, sans-serif; color:#10A37F;'>WAL.AI</h1>
 """, unsafe_allow_html=True)
 
 user_case = st.text_area("Enter your case detail below...")
@@ -77,7 +77,7 @@ if st.button("Find Matching Sections") and user_case.strip():
         else:
             indices, scores = [], []
 
-    # Show results with styled boxes
+    # Show results with dark-themed ChatGPT-style cards
     if not indices:
         st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
     else:
@@ -89,13 +89,14 @@ if st.button("Find Matching Sections") and user_case.strip():
                 <div style="
                     padding: 20px; 
                     border-radius: 12px; 
-                    background-color: #f2f2f2; 
+                    background-color: #343541; 
+                    color: #d4d4d8; 
                     margin-bottom: 15px; 
-                    box-shadow: 1px 1px 5px rgba(0,0,0,0.08);
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                    font-family: 'Arial', sans-serif;
                 ">
                     <h3 style="
-                        font-family: 'Arial', sans-serif; 
-                        color:#0d6efd; 
+                        color:#10A37F; 
                         margin-bottom:5px;
                     ">
                         Section {sec.get('Section', '')}: {sec.get('Title', '')}
