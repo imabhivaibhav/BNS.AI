@@ -68,7 +68,7 @@ section_embeddings = embed_sections(sections_data)
 # -----------------------
 st.markdown(
     """
-    <h1 style='text-align: center; color: green; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;'>
+    <h1 style='text-align: center; color: #28a745; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;'>
         WAL.AI
     </h1>
     """,
@@ -133,5 +133,6 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
 
 
