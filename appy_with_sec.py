@@ -38,7 +38,7 @@ section_embeddings = embed_sections(sections_data)
 # -----------------------
 # Streamlit UI
 # -----------------------
-st.title("BELii.AI")
+st.title("WAL.AI")
 user_case = st.text_area("Enter your case or section number:")
 
 if st.button("Find Matching Sections") and user_case.strip():
@@ -86,5 +86,6 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Title:** {sec.get('Title', '')}")
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
+
 
 
