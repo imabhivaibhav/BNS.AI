@@ -39,7 +39,7 @@ section_embeddings = embed_sections(sections_data)
 # Streamlit UI
 # -----------------------
 st.title("WAL.AI")
-user_case = st.text_area("Enter your case or section number:")
+user_case = st.text_area("Enter your case detail below...")
 
 if st.button("Find Matching Sections") and user_case.strip():
     query = user_case.lower().strip()
@@ -86,6 +86,7 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Title:** {sec.get('Title', '')}")
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
+
 
 
 
