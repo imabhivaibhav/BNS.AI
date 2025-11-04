@@ -36,11 +36,11 @@ def embed_sections(sections):
 section_embeddings = embed_sections(sections_data)
 
 # -----------------------
-# Streamlit UI
+# Streamlit UI with centered layout
 # -----------------------
 st.markdown("""
     <style>
-        /* Center content and limit width */
+        /* Center content and narrow design */
         .centered-container {
             max-width: 700px;
             margin-left: auto;
@@ -52,6 +52,7 @@ st.markdown("""
             background-color: #343541;
             color: #d4d4d8;
             border-radius: 8px;
+            width: 100%;
         }
 
         /* Button style */
@@ -60,82 +61,100 @@ st.markdown("""
             color: white;
             border-radius: 8px;
             padding: 0.5em 1em;
+            width: 100%;
         }
 
-        /* Dark page background */
+        /* Dark page background and text color */
         .main {
             background-color: #202123;
             color: #d4d4d8;
         }
+
+        /* Output card style */
+        .output-card {
+            padding: 20px; 
+            border-radius: 12px; 
+            background-color: #343541; 
+            color: #d4d4d8; 
+            margin-bottom: 15px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1.title {
+            font-family: 'Arial', sans-serif;
+            color: #10A37F;
+            text-align: center;
+        }
+
+        h2.subheader {
+            text-align: center;
+        }
     </style>
-    <div class="centered-container">
-        <h1 style='font-family: Arial, sans-serif; color:#10A37F;'>WAL.AI</h1>
-    </div>
 """, unsafe_allow_html=True)
 
-# Center the text area
+# Title
+st.markdown('<h1 class="title">WAL.AI</h1>', unsafe_allow_html=True)
+
+# Main container for input and results
 with st.container():
     st.markdown('<div class="centered-container">', unsafe_allow_html=True)
+
+    # Input box
     user_case = st.text_area("Enter your case detail below...")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-if st.button("Find Matching Sections") and user_case.strip():
-    query = user_case.lower().strip()
-    number = "".join(re.findall(r"\d+", query))
+    # Search button
+    if st.button("Find Matching Sections") and user_case.strip():
+        query = user_case.lower().strip()
+        number = "".join(re.findall(r"\d+", query))
 
-    # Direct section match
-    direct = [
-        i for i, s in enumerate(sections_data)
-        if number and number == "".join(re.findall(r"\d+", s.get("Section", "")))
-    ]
+        # Direct section match
+        direct = [
+            i for i, s in enumerate(sections_data)
+            if number and number == "".join(re.findall(r"\d+", s.get("Section", "")))
+        ]
 
-    # If direct match found, skip semantic search
-    if direct:
-        indices = direct
-        scores = [1.0] * len(indices)
-    else:
-        # Semantic search
-        user_emb = model.encode(query, convert_to_tensor=True)
-        sims = util.cos_sim(user_emb, section_embeddings)[0]
-
-        # Sort and get top 10, then filter by similarity threshold
-        top_k = 10
-        best = torch.topk(sims, k=min(top_k, len(sims)))
-        indices = best.indices.tolist()
-        scores = best.values.tolist()
-
-        # Dynamic threshold – keep only strong matches
-        threshold = max(0.55, float(torch.median(best.values)) + 0.03)
-        filtered = [(i, s) for i, s in zip(indices, scores) if s >= threshold]
-        if filtered:
-            indices, scores = zip(*filtered)
+        # If direct match found, skip semantic search
+        if direct:
+            indices = direct
+            scores = [1.0] * len(indices)
         else:
-            indices, scores = [], []
+            # Semantic search
+            user_emb = model.encode(query, convert_to_tensor=True)
+            sims = util.cos_sim(user_emb, section_embeddings)[0]
 
-    # Show results with dark-themed centered cards
-    if not indices:
-        st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
-    else:
-        st.subheader("Matched Sections:")
-        for idx, score in zip(indices, scores):
-            sec = sections_data[idx]
-            st.markdown(
-                f"""
-                <div class="centered-container" style="
-                    padding: 20px; 
-                    border-radius: 12px; 
-                    background-color: #343541; 
-                    color: #d4d4d8; 
-                    margin-bottom: 15px; 
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-                    font-family: 'Arial', sans-serif;
-                ">
-                    <h3 style="color:#10A37F; margin-bottom:5px;">
-                        Section {sec.get('Section', '')}: {sec.get('Title', '')}
-                    </h3>
-                    <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
-                    <p><b>Description:</b> {sec.get('Description', '')}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            # Sort and get top 10, then filter by similarity threshold
+            top_k = 10
+            best = torch.topk(sims, k=min(top_k, len(sims)))
+            indices = best.indices.tolist()
+            scores = best.values.tolist()
+
+            # Dynamic threshold – keep only strong matches
+            threshold = max(0.55, float(torch.median(best.values)) + 0.03)
+            filtered = [(i, s) for i, s in zip(indices, scores) if s >= threshold]
+            if filtered:
+                indices, scores = zip(*filtered)
+            else:
+                indices, scores = [], []
+
+        # Show results
+        if not indices:
+            st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
+        else:
+            st.markdown('<h2 class="subheader">Matched Sections:</h2>', unsafe_allow_html=True)
+            for idx, score in zip(indices, scores):
+                sec = sections_data[idx]
+                st.markdown(
+                    f"""
+                    <div class="output-card">
+                        <h3 style="color:#10A37F; margin-bottom:5px;">
+                            Section {sec.get('Section', '')}: {sec.get('Title', '')}
+                        </h3>
+                        <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
+                        <p><b>Description:</b> {sec.get('Description', '')}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+    st.markdown('</div>', unsafe_allow_html=True)
