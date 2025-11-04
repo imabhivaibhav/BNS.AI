@@ -16,7 +16,7 @@ def load_sections():
 sections_data = load_sections()
 
 # -----------------------
-# Load model (cached)
+# Load model
 # -----------------------
 @st.cache_resource
 def load_model():
@@ -26,135 +26,77 @@ st.write("Loading model, please wait...")
 model = load_model()
 
 # -----------------------
-# Embed all section descriptions (cached)
+# Embed sections
 # -----------------------
 @st.cache_data
 def embed_sections(sections):
-    texts = [sec["Description"] for sec in sections]
+    texts = [
+        f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}"
+        for sec in sections
+    ]
     return model.encode(texts, convert_to_tensor=True)
 
 section_embeddings = embed_sections(sections_data)
 
 # -----------------------
-# Streamlit UI with centered layout
+# Streamlit UI
 # -----------------------
-st.markdown("""
-    <style>
-        /* Center content and narrow design */
-        .centered-container {
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+st.title("BEL.AI")
+user_case = st.text_area("Enter your case description or section number:")
 
-        /* Dark input area */
-        textarea.stTextArea>div>div>textarea {
-            background-color: #343541;
-            color: #d4d4d8;
-            border-radius: 8px;
-            width: 100%;
-        }
+if st.button("Find Matching Sections") and user_case.strip():
+    query = user_case.lower().strip()
+    number = "".join(re.findall(r"\d+", query))
 
-        /* Button style */
-        div.stButton>button {
-            background-color: #10A37F;
-            color: white;
-            border-radius: 8px;
-            padding: 0.5em 1em;
-            width: 100%;
-        }
+    # 1️⃣ Direct section match
+    direct = [
+        i for i, s in enumerate(sections_data)
+        if number and number == "".join(re.findall(r"\d+", s.get("Section", "")))
+    ]
 
-        /* Dark page background and text color */
-        .main {
-            background-color: #202123;
-            color: #d4d4d8;
-        }
+    if direct:
+        indices = direct
+        scores = [1.0] * len(indices)
+    else:
+        # 2️⃣ Multi-sentence / multi-phrase semantic search
+        sentences = sent_tokenize(user_case)
+        matched = {}
 
-        /* Output card style */
-        .output-card {
-            padding: 20px; 
-            border-radius: 12px; 
-            background-color: #343541; 
-            color: #d4d4d8; 
-            margin-bottom: 15px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-            font-family: 'Arial', sans-serif;
-        }
+        for sent in sentences:
+            sent_emb = model.encode(sent, convert_to_tensor=True)
+            sims = util.cos_sim(sent_emb, section_embeddings)[0]
 
-        h1.title {
-            font-family: 'Arial', sans-serif;
-            color: #10A37F;
-            text-align: center;
-        }
+            # top 10 for this phrase
+            top_k = min(10, len(sims))
+            top_idx = torch.argsort(sims, descending=True)[:top_k]
+            top_scores = sims[top_idx]
 
-        h2.subheader {
-            text-align: center;
-        }
-    </style>
-""", unsafe_allow_html=True)
+            # dynamic threshold per phrase
+            median_score = float(torch.median(top_scores))
+            threshold = max(0.45, median_score - 0.05)
 
-# Title
-st.markdown('<h1 class="title">WAL.AI</h1>', unsafe_allow_html=True)
+            for idx, score in zip(top_idx.tolist(), top_scores.tolist()):
+                if score >= threshold:
+                    if idx not in matched or score > matched[idx]:
+                        matched[idx] = score
 
-# Main container for input and results
-with st.container():
-    st.markdown('<div class="centered-container">', unsafe_allow_html=True)
-
-    # Input box
-    user_case = st.text_area("Enter your case detail below...")
-
-    # Search button
-    if st.button("Find Matching Sections") and user_case.strip():
-        query = user_case.lower().strip()
-        number = "".join(re.findall(r"\d+", query))
-
-        # Direct section match
-        direct = [
-            i for i, s in enumerate(sections_data)
-            if number and number == "".join(re.findall(r"\d+", s.get("Section", "")))
-        ]
-
-        # If direct match found, skip semantic search
-        if direct:
-            indices = direct
-            scores = [1.0] * len(indices)
+        # sort by relevance
+        if matched:
+            sorted_matched = sorted(matched.items(), key=lambda x: x[1], reverse=True)[:7]
+            indices, scores = zip(*sorted_matched)
         else:
-            # Semantic search
-            user_emb = model.encode(query, convert_to_tensor=True)
-            sims = util.cos_sim(user_emb, section_embeddings)[0]
+            indices, scores = [], []
 
-            # Sort and get top 10, then filter by similarity threshold
-            top_k = 10
-            best = torch.topk(sims, k=min(top_k, len(sims)))
-            indices = best.indices.tolist()
-            scores = best.values.tolist()
-
-            # Dynamic threshold – keep only strong matches
-            threshold = max(0.55, float(torch.median(best.values)) + 0.03)
-            filtered = [(i, s) for i, s in zip(indices, scores) if s >= threshold]
-            if filtered:
-                indices, scores = zip(*filtered)
-            else:
-                indices, scores = [], []
-
-        # Show results
-        if not indices:
-            st.warning("No matching sections found. Try describing your case in more detail or use a valid section number.")
-        else:
-            st.markdown('<h2 class="subheader">Matched Sections:</h2>', unsafe_allow_html=True)
-            for idx, score in zip(indices, scores):
-                sec = sections_data[idx]
-                st.markdown(
-                    f"""
-                    <div class="output-card">
-                        <h3 style="color:#10A37F; margin-bottom:5px;">
-                            Section {sec.get('Section', '')}: {sec.get('Title', '')}
-                        </h3>
-                        <p><b>Punishment:</b> {sec.get('Punishment', '')}</p>
-                        <p><b>Description:</b> {sec.get('Description', '')}</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-    st.markdown('</div>', unsafe_allow_html=True)
+    # 3️⃣ Show results
+    if not indices:
+        st.warning("No matching sections found. Try describing your case differently.")
+    else:
+        st.subheader("Relevant Section(s):")
+        for idx, score in zip(indices, scores):
+            sec = sections_data[idx]
+            st.write("---")
+            st.write(f"**Section:** {sec.get('Section', '')}")
+            st.write(f"**Title:** {sec.get('Title', '')}")
+            st.write(f"**Punishment:** {sec.get('Punishment', '')}")
+            st.write(f"**Description:** {sec.get('Description', '')}")
+            st.caption(f"Relevance: {score:.3f}")
