@@ -25,7 +25,7 @@ sections_data = load_sections()
 # -----------------------
 @st.cache_resource
 def load_model():
-    return SentenceTransformer('all-MiniLM-L6-v2')
+    return SentenceTransformer('all-mpnet-base-v2')
 
 # -----------------------
 # ChatGPT-style Welcome
@@ -141,6 +141,7 @@ if st.button("Find Matching Sections") and user_case.strip():
             st.write(f"**Punishment:** {sec.get('Punishment', '')}")
             st.write(f"**Description:** {sec.get('Description', '')}")
             st.caption(f"Relevance: {score:.3f}")
+
 
 
 
