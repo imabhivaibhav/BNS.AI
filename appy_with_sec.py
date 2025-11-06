@@ -16,8 +16,8 @@ nltk.download('punkt', quiet=True)
 st.set_page_config(
     page_title="WAL.AI",
     layout="centered",
-    initial_sidebar_state="collapsed"
-    
+    initial_sidebar_state="collapsed",
+    font-size: "120px"
     
 )
 
@@ -147,6 +147,7 @@ if find_button and user_case.strip():
                     st.markdown(f"**Description:** {sec.get('Description', '')}")
                     st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
