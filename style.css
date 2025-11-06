@@ -1,37 +1,46 @@
 /* ----------------------------
    style.css
-   Custom styling for WAL.AI
+   Clean, ChatGPT-style UI
 ----------------------------- */
 
-/* Center main content area */
+/* Center the main content and make it narrow */
 .block-container {
-    max-width: 650px;       /* narrower than 800px */
-    padding-left: 2rem;     /* smaller side padding */
-    padding-right: 2rem;    /* smaller side padding */
+    max-width: 650px;        /* Narrow width */
+    padding-left: 2rem;      /* Side padding */
+    padding-right: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     margin: auto;
 }
 
-
 /* Text area (user input) */
 textarea {
-    width: 100% !important;
+    width: 100% !important;          /* Fill container width */
+    max-width: 100% !important;      /* Avoid overflow */
     border-radius: 10px !important;
     padding: 12px !important;
     font-size: 16px !important;
     line-height: 1.4 !important;
     resize: vertical;
+    border: 1px solid #ccc !important;
 }
 
-/* Buttons */
-.stButton>button {
+/* Button */
+.stButton > button {
     display: block;
-    margin: 1rem auto;
+    margin: 1rem auto;               /* Center button */
     background-color: #28a745 !important;
     color: white !important;
     font-size: 18px !important;
     border-radius: 8px !important;
     padding: 0.5rem 1.5rem;
     border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.stButton > button:hover {
+    background-color: #218838 !important;
 }
 
 /* Expander header */
@@ -41,3 +50,20 @@ textarea {
     font-weight: 600 !important;
 }
 
+/* Subheaders inside app */
+h3, h4 {
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Optional shadowed box for the welcome message or headers */
+.welcome-box {
+    padding: 20px;
+    border-radius: 12px;
+    color: #666666;
+    font-size: 20px;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
