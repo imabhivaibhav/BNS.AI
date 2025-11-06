@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 
 HF_TOKEN = st.secrets["HF_TOKEN"]  # your Hugging Face token
-MODEL_ID = "meta-llama/Llama-3.1-8B"
+MODEL_ID = "tiiuae/falcon-7b-instruct"
 
 # -----------------------------
 # Retrieve top sections based on semantic similarity
@@ -59,6 +59,7 @@ def generate_ai_answer(question, retrieved_sections):
             return f"⚠️ AI generation failed ({response.status_code}): {response.text}"
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
+
 
 
 
