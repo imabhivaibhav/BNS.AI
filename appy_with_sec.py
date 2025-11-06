@@ -11,54 +11,17 @@ from nltk.tokenize import sent_tokenize
 # Setup
 # --------------------------------------------
 nltk.download('punkt', quiet=True)
-
 st.set_page_config(page_title="WAL.AI", layout="wide")
 
 # --------------------------------------------
-# Custom CSS for centered ChatGPT-style layout
+# Apply external CSS (optional)
 # --------------------------------------------
-st.markdown("""
-    <style>
-    /* Center all content */
-    .block-container {
-        max-width: 800px;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        padding-left: 4rem;
-        padding-right: 4rem;
-        margin: auto;
-    }
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-    /* Center text areas and inputs */
-    textarea {
-        width: 100% !important;
-        border-radius: 10px !important;
-        padding: 12px !important;
-        font-size: 16px !important;
-        line-height: 1.4 !important;
-        resize: vertical;
-    }
-
-    /* Buttons */
-    .stButton>button {
-        display: block;
-        margin: 1rem auto;
-        background-color: #28a745 !important;
-        color: white !important;
-        font-size: 18px !important;
-        border-radius: 8px !important;
-        padding: 0.5rem 1.5rem;
-        border: none;
-    }
-
-    /* Expander style */
-    .streamlit-expanderHeader {
-        font-size: 18px !important;
-        color: #333 !important;
-        font-weight: 600 !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Uncomment if you have external CSS
+# local_css("style.css")
 
 # --------------------------------------------
 # Load dataset
