@@ -6,20 +6,17 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 import nltk
 from datetime import datetime
-from nltk.tokenize import sent_tokenize
 
-# Import AI mode module
 from ai_mode import retrieve_top_sections, generate_ai_answer
 
 # -----------------------------
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
+
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
-# -----------------------------
 # Load dataset
-# -----------------------------
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
@@ -27,18 +24,14 @@ def load_sections():
 
 sections_data = load_sections()
 
-# -----------------------------
 # Load model for semantic search
-# -----------------------------
 @st.cache_resource
 def load_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
 model = load_model()
 
-# -----------------------------
 # Embed sections
-# -----------------------------
 @st.cache_data
 def embed_sections(sections):
     texts = [
@@ -92,13 +85,11 @@ if submit and user_case.strip():
             subqueries = [q.strip() for q in subqueries if q.strip()]
 
             matched = {}
-            # Direct number match
             for i, s in enumerate(sections_data):
                 sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
                 if any(num == sec_num for num in section_numbers):
                     matched[i] = 1.0
 
-            # Semantic match
             if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
                 for sq in subqueries:
                     sq_emb = model.encode(sq, convert_to_tensor=True)
