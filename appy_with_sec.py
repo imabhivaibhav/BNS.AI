@@ -17,6 +17,8 @@ st.set_page_config(
     page_title="WAL.AI",
     layout="centered",
     initial_sidebar_state="collapsed"
+    
+    
 )
 
 # Load external CSS
@@ -64,7 +66,7 @@ section_embeddings = embed_sections(sections_data)
 today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(f"""
 <div class="welcome-box">
-    Welcome to <b>WAL.AI</b> — your intelligent legal section matcher.<br>
+    Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
     {today}.
 </div>
 """, unsafe_allow_html=True)
@@ -79,7 +81,7 @@ col1, col2, col3 = st.columns([1, 8, 1])  # Wider center column
 with col2:
     user_case = st.text_area(
         "Enter your case description or section numbers:",
-        placeholder="E.g., 'Section 2, 3 and 4' or 'Kidnapping and murder case involving ransom'",
+        placeholder="E.g., 'Section 101, 222 ' or 'A person killed someone'",
         height=220
     )
     find_button = st.button("Find Matching Sections")
@@ -145,4 +147,5 @@ if find_button and user_case.strip():
                     st.markdown(f"**Description:** {sec.get('Description', '')}")
                     st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                     st.caption(f"Relevance score: {score:.3f}")
+
 
