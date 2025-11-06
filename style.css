@@ -5,13 +5,12 @@
 
 /* Center main content area */
 .block-container {
-    max-width: 800px;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    padding-left: 4rem;
-    padding-right: 4rem;
+    max-width: 650px;       /* narrower than 800px */
+    padding-left: 2rem;     /* smaller side padding */
+    padding-right: 2rem;    /* smaller side padding */
     margin: auto;
 }
+
 
 /* Text area (user input) */
 textarea {
@@ -41,3 +40,4 @@ textarea {
     color: #333 !important;
     font-weight: 600 !important;
 }
+
