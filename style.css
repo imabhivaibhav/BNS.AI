@@ -8,6 +8,7 @@
     margin: auto;
 }
 
+
 /* Text area */
 textarea {
     width: 100% !important;
@@ -44,13 +45,14 @@ textarea {
 }
 
 /* Welcome box */
+
 .welcome-box {
-    padding: 20px;
-    border-radius: 12px;
-    color: #666666;
-    font-size: 20px;
     text-align: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+    font-size: 20px;
+    background-color: #f0f8ff;
+    padding: 15px;
+    border-radius: 10px;
     margin-bottom: 20px;
 }
+
+
