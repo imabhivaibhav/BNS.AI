@@ -1,8 +1,14 @@
 # ai_mode.py
+import os
 import torch
 import requests
 
-HF_TOKEN = "hf_your_valid_token_here"  # Replace with your token or use env variable
+# -----------------------------
+# Load Hugging Face token from environment
+# -----------------------------
+HF_TOKEN = os.getenv("HF_TOKEN")
+if not HF_TOKEN:
+    raise ValueError("HF_TOKEN environment variable not set. Please set it before running the script.")
 
 # -----------------------------
 # Retrieve top sections based on semantic similarity
@@ -30,7 +36,7 @@ def generate_ai_answer(question, retrieved_sections):
 
     try:
         response = requests.post(
-            "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
+            "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
             headers={"Authorization": f"Bearer {HF_TOKEN}"},
             json={"inputs": prompt, "parameters": {"max_new_tokens": 350}},
             timeout=30
