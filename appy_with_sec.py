@@ -74,7 +74,7 @@ st.markdown("<h1 style='text-align:center; color:#28a745;'>WAL.AI</h1>", unsafe_
 # -----------------------------
 # Centered input using columns
 # -----------------------------
-col1, col2, col3 = st.columns([1, 4, 1])  # Wider center column
+col1, col2, col3 = st.columns([1, 8, 1])  # Wider center column
 
 with col2:
     user_case = st.text_area(
@@ -145,3 +145,4 @@ if find_button and user_case.strip():
                     st.markdown(f"**Description:** {sec.get('Description', '')}")
                     st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                     st.caption(f"Relevance score: {score:.3f}")
+
