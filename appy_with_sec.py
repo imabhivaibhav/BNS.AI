@@ -66,7 +66,7 @@ section_embeddings = embed_sections(sections_data)
 today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(f"""
 <div class="welcome-box">
-    Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
+    👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
     {today}.
 </div>
 """, unsafe_allow_html=True)
@@ -147,5 +147,6 @@ if find_button and user_case.strip():
                     st.markdown(f"**Description:** {sec.get('Description', '')}")
                     st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
