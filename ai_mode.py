@@ -1,12 +1,11 @@
 # ai_mode.py
-import os
 import torch
 import requests
+import streamlit as st
 
-# Read Hugging Face token from environment
-HF_TOKEN = os.getenv("HF_TOKEN")
-if not HF_TOKEN:
-    raise ValueError("HF_TOKEN environment variable not set. Set it in GitHub/Streamlit secrets.")
+# Get Hugging Face token from Streamlit secrets
+HF_TOKEN = st.secrets["HF_TOKEN"]  # Make sure you added it as 'HF_TOKEN' in your repo secrets
+MODEL_ID = "TheBloke/Llama-3.1-8B-Instruct"  # Replace with correct model
 
 # -----------------------------
 # Retrieve top sections based on semantic similarity
@@ -18,10 +17,9 @@ def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k
     return [(sections_data[i], float(sims[i])) for i in top_indices]
 
 # -----------------------------
-# Generate AI answer using Hugging Face Router API
+# Generate AI answer using Hugging Face Inference API
 # -----------------------------
 def generate_ai_answer(question, retrieved_sections):
-    # Combine sections as context
     context = "\n\n".join(
         [f"Section {s['Section']}: {s['Title']}\n{s['Description']}" for s, _ in retrieved_sections]
     )
@@ -32,26 +30,30 @@ def generate_ai_answer(question, retrieved_sections):
         f"{context}\n\nQuestion: {question}\nAnswer:"
     )
 
-    # Change MODEL_ID to the correct public model
-    MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct"
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+    payload = {"inputs": prompt, "parameters": {"max_new_tokens": 350}}
 
     try:
         response = requests.post(
-            f"https://router.huggingface.co/hf-inference/models/{MODEL_ID}",
-            headers={"Authorization": f"Bearer {HF_TOKEN}"},
-            json={"inputs": prompt, "parameters": {"max_new_tokens": 350}},
+            f"https://api-inference.huggingface.co/models/{MODEL_ID}",
+            headers=headers,
+            json=payload,
             timeout=60
         )
-
         if response.status_code == 200:
-            return response.json()[0]["generated_text"].split("Answer:")[-1].strip()
+            # Some models return list, some return dict
+            result = response.json()
+            if isinstance(result, list):
+                return result[0].get("generated_text", "").split("Answer:")[-1].strip()
+            elif isinstance(result, dict):
+                return result.get("generated_text", "").split("Answer:")[-1].strip()
+            else:
+                return "⚠️ Unexpected response format from model."
         elif response.status_code == 401:
-            return "⚠️ Invalid Hugging Face credentials. Please check your HF_TOKEN."
+            return "⚠️ Invalid Hugging Face credentials. Check your HF_TOKEN and model license acceptance."
         elif response.status_code == 404:
-            return f"⚠️ Model {MODEL_ID} not found. Check MODEL_ID or license acceptance."
+            return f"⚠️ Model '{MODEL_ID}' not found or not available for inference."
         else:
             return f"⚠️ AI generation failed ({response.status_code}): {response.text}"
-
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
-
