@@ -53,11 +53,14 @@ section_embeddings = embed_sections(sections_data)
 # -----------------------------
 today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(f"""
-<div class="welcome-box">
-    👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
-    {today}.
+<div style="width:100%; display:flex; justify-content:center;">
+    <div style="text-align:center; font-size:20px; background-color:#f0f8ff; padding:15px; border-radius:10px;">
+        👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
+        {today}.
+    </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
@@ -144,4 +147,5 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
