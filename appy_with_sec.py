@@ -12,10 +12,10 @@ from nltk.tokenize import sent_tokenize
 # --------------------------------------------
 nltk.download('punkt', quiet=True)
 
-st.set_page_config(page_title="WAL.AI", page_icon="⚖️", layout="wide")
+st.set_page_config(page_title="WAL.AI", layout="wide")
 
 # --------------------------------------------
-# Custom CSS for ChatGPT-like centered UI
+# Custom CSS for centered ChatGPT-style layout
 # --------------------------------------------
 st.markdown("""
     <style>
@@ -39,7 +39,7 @@ st.markdown("""
         resize: vertical;
     }
 
-    /* Center buttons and headings */
+    /* Buttons */
     .stButton>button {
         display: block;
         margin: 1rem auto;
@@ -113,7 +113,7 @@ st.markdown(
         font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
     ">
-        👋 Welcome to <b>WAL.AI</b> — your intelligent legal section matcher.<br>
+        Welcome to <b>WAL.AI</b> — your intelligent legal section matcher.<br>
         {today}.
     </div>
     """,
@@ -132,7 +132,7 @@ st.markdown(
         margin-top: 10px;
         margin-bottom: 30px;
     '>
-        ⚖️ WAL.AI
+        WAL.AI
     </h1>
     """,
     unsafe_allow_html=True
@@ -153,24 +153,24 @@ user_case = st.text_area(
 if st.button("Find Matching Sections") and user_case.strip():
     query = user_case.lower().strip()
 
-    with st.spinner("🔍 Analyzing your input and finding relevant sections..."):
+    with st.spinner("Analyzing your input and finding relevant sections..."):
 
-        # --- 1️⃣ Extract multiple section numbers (handles commas, 'and', etc.)
+        # 1️⃣ Extract multiple section numbers (handles commas, 'and', etc.)
         section_numbers = re.findall(r"\d+", query)
 
-        # --- 2️⃣ Split query into smaller parts (handles commas, and/or)
+        # 2️⃣ Split query into smaller parts (handles commas, and/or)
         subqueries = re.split(r",| and | or ", query)
         subqueries = [q.strip() for q in subqueries if q.strip()]
 
         matched = {}
 
-        # --- 3️⃣ Direct number-based matches
+        # 3️⃣ Direct number-based matches
         for i, s in enumerate(sections_data):
             sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
             if any(num == sec_num for num in section_numbers):
                 matched[i] = 1.0  # Perfect match score
 
-        # --- 4️⃣ Semantic matches for each subquery (multi-topic)
+        # 4️⃣ Semantic matches for each subquery (multi-topic)
         if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
             for sq in subqueries:
                 sq_emb = model.encode(sq, convert_to_tensor=True)
@@ -187,7 +187,7 @@ if st.button("Find Matching Sections") and user_case.strip():
                     if score >= threshold:
                         matched[idx] = max(matched.get(idx, 0), float(score))
 
-        # --- 5️⃣ Sort by relevance
+        # 5️⃣ Sort by relevance
         if matched:
             sorted_matched = sorted(matched.items(), key=lambda x: x[1], reverse=True)[:10]
             indices, scores = zip(*sorted_matched)
@@ -200,10 +200,10 @@ if st.button("Find Matching Sections") and user_case.strip():
     if not indices:
         st.warning("No matching sections found. Try describing your case differently.")
     else:
-        st.markdown("<h3 style='text-align:center;'>📘 Relevant Section(s):</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align:center;'>Relevant Section(s):</h3>", unsafe_allow_html=True)
         for idx, score in zip(indices, scores):
             sec = sections_data[idx]
-            with st.expander(f"⚖️ Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
+            with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                 st.markdown(f"**Description:** {sec.get('Description', '')}")
                 st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                 st.caption(f"Relevance score: {score:.3f}")
