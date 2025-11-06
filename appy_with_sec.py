@@ -74,13 +74,13 @@ st.markdown("<h1 style='text-align:center; color:#28a745;'>WAL.AI</h1>", unsafe_
 # -----------------------------
 # Centered input using columns
 # -----------------------------
-col1, col2, col3 = st.columns([1, 3, 1])
+col1, col2, col3 = st.columns([1, 4, 1])  # Wider center column
 
 with col2:
     user_case = st.text_area(
         "Enter your case description or section numbers:",
         placeholder="E.g., 'Section 2, 3 and 4' or 'Kidnapping and murder case involving ransom'",
-        height=180
+        height=220
     )
     find_button = st.button("Find Matching Sections")
 
