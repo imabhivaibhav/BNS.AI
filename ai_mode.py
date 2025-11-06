@@ -4,8 +4,7 @@ import requests
 import streamlit as st
 
 HF_TOKEN = st.secrets["HF_TOKEN"]  # your Hugging Face token
-MODEL_ID = "google/flan-t5-base"
-
+MODEL_ID = "deepseek-ai/DeepSeek-OCR
 # -----------------------------
 # Retrieve top sections based on semantic similarity
 # -----------------------------
@@ -59,6 +58,7 @@ def generate_ai_answer(question, retrieved_sections):
             return f"⚠️ AI generation failed ({response.status_code}): {response.text}"
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
+
 
 
 
