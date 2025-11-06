@@ -3,9 +3,8 @@ import torch
 import requests
 import streamlit as st
 
-# Get Hugging Face token from Streamlit secrets
-HF_TOKEN = st.secrets["HF_TOKEN"]  # Make sure you added it as 'HF_TOKEN' in your repo secrets
-MODEL_ID = "TheBloke/Llama-3.1-8B-Instruct"  # Replace with correct model
+HF_TOKEN = st.secrets["HF_TOKEN"]  # your Hugging Face token
+MODEL_ID = "TheBloke/Llama-3.1-8B-Instruct"
 
 # -----------------------------
 # Retrieve top sections based on semantic similarity
@@ -17,7 +16,7 @@ def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k
     return [(sections_data[i], float(sims[i])) for i in top_indices]
 
 # -----------------------------
-# Generate AI answer using Hugging Face Inference API
+# Generate AI answer using Hugging Face Inference Router API
 # -----------------------------
 def generate_ai_answer(question, retrieved_sections):
     context = "\n\n".join(
@@ -31,17 +30,20 @@ def generate_ai_answer(question, retrieved_sections):
     )
 
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    payload = {"inputs": prompt, "parameters": {"max_new_tokens": 350}}
+    payload = {
+        "inputs": prompt,
+        "parameters": {"max_new_tokens": 350}
+    }
 
     try:
         response = requests.post(
-            f"https://api-inference.huggingface.co/models/{MODEL_ID}",
+            f"https://router.huggingface.co/hf-inference/models/{MODEL_ID}",
             headers=headers,
             json=payload,
             timeout=60
         )
+
         if response.status_code == 200:
-            # Some models return list, some return dict
             result = response.json()
             if isinstance(result, list):
                 return result[0].get("generated_text", "").split("Answer:")[-1].strip()
@@ -50,7 +52,7 @@ def generate_ai_answer(question, retrieved_sections):
             else:
                 return "⚠️ Unexpected response format from model."
         elif response.status_code == 401:
-            return "⚠️ Invalid Hugging Face credentials. Check your HF_TOKEN and model license acceptance."
+            return "⚠️ Invalid Hugging Face credentials. Check your HF_TOKEN."
         elif response.status_code == 404:
             return f"⚠️ Model '{MODEL_ID}' not found or not available for inference."
         else:
