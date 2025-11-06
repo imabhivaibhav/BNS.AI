@@ -70,7 +70,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align:center; color:#28a745; font-size:80px;'>WAL.AI</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center; color:#28a745; font-size:160px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
 # -----------------------------
 # Centered input using columns
@@ -146,6 +146,7 @@ if find_button and user_case.strip():
                     st.markdown(f"**Description:** {sec.get('Description', '')}")
                     st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
