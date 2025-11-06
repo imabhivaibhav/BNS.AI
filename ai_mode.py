@@ -23,7 +23,7 @@ def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k
 # -----------------------------
 # Generate AI answer using Hugging Face Inference API
 # -----------------------------
-def generate_ai_answer(question, retrieved_sections, model_id="TheBloke/Llama-3.1-8B-Instruct-GGUF"):
+def generate_ai_answer(question, retrieved_sections, model_id="meta-llama/Llama-3.1-8B-Instruct"):
     context = "\n\n".join(
         [f"Section {s['Section']}: {s['Title']}\n{s['Description']}" for s, _ in retrieved_sections]
     )
@@ -34,7 +34,7 @@ def generate_ai_answer(question, retrieved_sections, model_id="TheBloke/Llama-3.
         f"{context}\n\nQuestion: {question}\nAnswer:"
     )
 
-    url = f"https://router.huggingface.co/hf-inference{meta-llama/Llama-3.1-8B-Instruct}"
+    url = f"https://router.huggingface.co/hf-inference{model_id}"
 
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     payload = {"inputs": prompt, "parameters": {"max_new_tokens": 350}}
@@ -56,5 +56,6 @@ def generate_ai_answer(question, retrieved_sections, model_id="TheBloke/Llama-3.
             return f"⚠️ AI generation failed ({response.status_code}): {response.text}"
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
+
 
 
