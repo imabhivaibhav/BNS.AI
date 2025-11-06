@@ -81,7 +81,7 @@ with col2:
     user_case = st.text_area(
         "Enter your case description or section numbers:",
         placeholder="E.g., 'Section 101, 222 ' or 'A person killed someone'",
-        height=220
+        height=190
     )
     find_button = st.button("Find Matching Sections")
 
@@ -146,6 +146,7 @@ if find_button and user_case.strip():
                     st.markdown(f"**Description:** {sec.get('Description', '')}")
                     st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
