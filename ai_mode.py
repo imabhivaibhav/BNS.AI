@@ -1,14 +1,16 @@
 # ai_mode.py
-import os
 import torch
 import requests
+import streamlit as st
 
 # -----------------------------
-# Load Hugging Face token from environment
+# Get HF token from Streamlit secrets
 # -----------------------------
-HF_TOKEN = os.getenv("HF_TOKEN")
+HF_TOKEN = st.secrets.get("HF_TOKEN")
 if not HF_TOKEN:
-    raise ValueError("HF_TOKEN environment variable not set. Please set it before running the script.")
+    raise ValueError(
+        "HF_TOKEN environment variable not set in Streamlit secrets. AI mode will be disabled."
+    )
 
 # -----------------------------
 # Retrieve top sections based on semantic similarity
@@ -23,6 +25,9 @@ def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k
 # Generate AI answer using Hugging Face Inference API
 # -----------------------------
 def generate_ai_answer(question, retrieved_sections):
+    if not HF_TOKEN:
+        return "⚠️ AI mode is disabled (HF_TOKEN missing)."
+
     # Combine sections as context
     context = "\n\n".join(
         [f"Section {s['Section']}: {s['Title']}\n{s['Description']}" for s, _ in retrieved_sections]
@@ -36,15 +41,16 @@ def generate_ai_answer(question, retrieved_sections):
 
     try:
         response = requests.post(
-            "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+            "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
             headers={"Authorization": f"Bearer {HF_TOKEN}"},
             json={"inputs": prompt, "parameters": {"max_new_tokens": 350}},
             timeout=30
         )
+
         if response.status_code == 200:
             return response.json()[0]["generated_text"].split("Answer:")[-1].strip()
         elif response.status_code == 401:
-            return "⚠️ Invalid Hugging Face credentials. Please check your HF_TOKEN."
+            return "⚠️ Invalid HF token."
         else:
             return f"⚠️ AI generation failed ({response.status_code}): {response.text}"
     except Exception as e:
