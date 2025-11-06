@@ -33,7 +33,7 @@ def generate_ai_answer(question, retrieved_sections):
     )
 
     # Change MODEL_ID to the correct public model
-    MODEL_ID = "TheBloke/Llama-3.1-8B-Instruct-GGUF"
+    MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct"
 
     try:
         response = requests.post(
@@ -54,3 +54,4 @@ def generate_ai_answer(question, retrieved_sections):
 
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
+
