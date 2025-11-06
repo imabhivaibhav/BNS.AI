@@ -89,7 +89,7 @@ def generate_ai_answer(question, retrieved_sections):
     )
 
     response = requests.post(
-        "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+    "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
         headers={"Authorization": f"Bearer {HF_TOKEN}"},
         json={"inputs": prompt, "parameters": {"max_new_tokens": 350}},
     )
@@ -202,3 +202,4 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
