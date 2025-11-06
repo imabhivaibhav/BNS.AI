@@ -34,7 +34,7 @@ def generate_ai_answer(question, retrieved_sections, model_id="TheBloke/Llama-3.
         f"{context}\n\nQuestion: {question}\nAnswer:"
     )
 
-    url = f"https://api-inference.huggingface.co/models/{model_id}"
+    url = f"https://router.huggingface.co/hf-inference{model_id}"
 
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     payload = {"inputs": prompt, "parameters": {"max_new_tokens": 350}}
@@ -56,3 +56,4 @@ def generate_ai_answer(question, retrieved_sections, model_id="TheBloke/Llama-3.
             return f"⚠️ AI generation failed ({response.status_code}): {response.text}"
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
+
