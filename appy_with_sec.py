@@ -58,18 +58,23 @@ st.markdown(f"""
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
 # -----------------------------
-# User Input
+# Chat Input Area
 # -----------------------------
 col1, col2, col3 = st.columns([1, 8, 1])
 with col2:
-    mode = st.radio("Choose Mode:", ["Find Matching Sections", "Ask AI"], horizontal=True)
-
+    # Text input with mode selection below
     user_case = st.text_area(
         "Enter your case description or question:",
         placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
-        height=190
+        height=190,
+        key="user_input"
     )
-    submit = st.button("Submit")
+
+    # Mode selector under text box
+    mode = st.selectbox("Choose Mode:", ["Find Matching Sections", "Ask AI"], key="mode_selector")
+
+    # Arrow button to submit (chat style)
+    submit = st.button("➡️", key="submit_arrow", help="Send your message")
 
 # -----------------------------
 # Main Logic
