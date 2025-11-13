@@ -1,3 +1,4 @@
+# wal_ai.py
 import json
 import re
 import streamlit as st
@@ -62,7 +63,9 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 col1, col2, col3 = st.columns([1, 8, 1])
 with col2:
     # Input container
-    st.markdown("<div style='display:flex; flex-direction:column;'>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="display:flex; flex-direction:column;">
+    """, unsafe_allow_html=True)
 
     # Text area
     user_case = st.text_area(
@@ -72,7 +75,7 @@ with col2:
         key="user_input"
     )
 
-    # Inline mode selection
+    # Inline mode selection (radio buttons like ChatGPT)
     mode = st.radio(
         "Mode:",
         ["Find Matching Sections", "Ask AI"],
@@ -80,8 +83,8 @@ with col2:
         key="mode_inline"
     )
 
-    # Arrow button
-    submit = st.button("➡️", key="submit_arrow", help="Send your message")
+    # Arrow button to send message
+    submit = st.button("➜", key="submit_arrow", help="Send your message")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -91,17 +94,47 @@ with col2:
 if submit and user_case.strip():
     query = user_case.strip()
 
-    # --- SEARCH MODE (updated to use semantic similarity) ---
+    # --- SEARCH MODE ---
     if mode == "Find Matching Sections":
         with st.spinner("Finding relevant sections..."):
-            retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=10)
+            section_numbers = re.findall(r"\d+", query)
+            subqueries = re.split(r",| and | or ", query)
+            subqueries = [q.strip() for q in subqueries if q.strip()]
+
+            matched = {}
+            for i, s in enumerate(sections_data):
+                sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
+                if any(num == sec_num for num in section_numbers):
+                    matched[i] = 1.0
+
+            if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
+                for sq in subqueries:
+                    sq_emb = model.encode(sq, convert_to_tensor=True)
+                    sims = util.cos_sim(sq_emb, section_embeddings)[0]
+
+                    top_k = min(10, len(sims))
+                    top_idx = torch.argsort(sims, descending=True)[:top_k]
+                    top_scores = sims[top_idx]
+                    median_score = float(torch.median(top_scores))
+                    threshold = max(0.45, median_score - 0.05)
+
+                    for idx, score in zip(top_idx.tolist(), top_scores.tolist()):
+                        if score >= threshold:
+                            matched[idx] = max(matched.get(idx, 0), float(score))
+
+            if matched:
+                sorted_matched = sorted(matched.items(), key=lambda x: x[1], reverse=True)[:10]
+                indices, scores = zip(*sorted_matched)
+            else:
+                indices, scores = [], []
 
         with col2:
-            if not retrieved:
+            if not indices:
                 st.warning("No matching sections found. Try describing your case differently.")
             else:
                 st.markdown("<h3 style='text-align:center;'>Relevant Section(s):</h3>", unsafe_allow_html=True)
-                for sec, score in retrieved:
+                for idx, score in zip(indices, scores):
+                    sec = sections_data[idx]
                     with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                         st.markdown(f"**Description:** {sec.get('Description', '')}")
                         st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
@@ -123,4 +156,4 @@ if submit and user_case.strip():
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
 
-
+# wal_ai.py
