@@ -84,7 +84,7 @@ with col2:
     )
 
     # Arrow button to send message
-    submit = st.button("➡️", key="submit_arrow", help="Send your message")
+    submit = st.button("➜", key="submit_arrow", help="Send your message")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -155,3 +155,4 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
