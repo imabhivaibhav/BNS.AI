@@ -7,12 +7,14 @@ import nltk
 from datetime import datetime
 
 from ai_mode import retrieve_top_sections, generate_ai_answer
-from wal_ai_history import search_history_ui
+
+
 
 # -----------------------------
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
+
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
 # Load dataset
@@ -57,89 +59,37 @@ st.markdown(f"""
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
 # -----------------------------
-# Input Section (Centered)
+# Input Section
 # -----------------------------
-st.markdown("""
-<style>
-.input-button-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
-}
-.text-input {
-    width: 500px;
-    min-height: 40px;
-    max-height: 300px;
-    resize: none;
-    padding: 8px;
-    font-size: 16px;
-}
-.circular-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-}
-.rotate {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-</style>
-""", unsafe_allow_html=True)
 
-st.markdown('<div class="input-button-container">', unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 8, 1])
 
-# Input box
-user_case = st.text_area(
-    "",
-    placeholder="Type your case or question here...",
-    height=40,
-    key="user_input",
-    label_visibility="collapsed"
-)
+with col2:
+    # Text area for user input
+    user_case = st.text_area(
+        "Enter your case description or question:",
+        placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
+        height=180,
+        key="user_input"
+    )
 
-# Hidden Streamlit button for submit logic
-submit = st.button("hidden_submit", key="submit_trigger", label_visibility="collapsed")
+    # Create three columns: mode on left, spacer in middle, button on far right
+    mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
 
-# Circular search button (visual)
-btn_placeholder = st.empty()
-btn_html = '<button class="circular-btn" id="search-btn">➜</button>'
-btn_placeholder.markdown(btn_html, unsafe_allow_html=True)
+    with mode_col:
+        mode = st.radio(
+            "",
+            ["Find Matching Sections", "Ask AI"],
+            horizontal=True,
+            key="mode_inline"
+        )
 
-st.markdown('</div>', unsafe_allow_html=True)
+    with btn_col:
+        st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
+        submit = st.button("➜")
 
-# Mode selector
-mode = st.radio(
-    "",
-    ["Find Matching Sections", "Ask AI"],
-    horizontal=True,
-    key="mode_inline"
-)
 
-search_history_ui()
 
-# -----------------------------
-# Rotate button while processing
-# -----------------------------
-if submit and user_case.strip():
-    st.components.v1.html("""
-    <script>
-    const btn = window.parent.document.getElementById('search-btn');
-    if(btn){ btn.classList.add('rotate'); }
-    </script>
-    """, height=0)
 
 # -----------------------------
 # Main Logic
@@ -181,16 +131,17 @@ if submit and user_case.strip():
             else:
                 indices, scores = [], []
 
-        if not indices:
-            st.warning("No matching sections found. Try describing your case differently.")
-        else:
-            st.markdown("<h3 style='text-align:center;'>Relevant Section(s):</h3>", unsafe_allow_html=True)
-            for idx, score in zip(indices, scores):
-                sec = sections_data[idx]
-                with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
-                    st.markdown(f"**Description:** {sec.get('Description', '')}")
-                    st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
-                    st.caption(f"Relevance score: {score:.3f}")
+        with col2:
+            if not indices:
+                st.warning("No matching sections found. Try describing your case differently.")
+            else:
+                st.markdown("<h3 style='text-align:center;'>Relevant Section(s):</h3>", unsafe_allow_html=True)
+                for idx, score in zip(indices, scores):
+                    sec = sections_data[idx]
+                    with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
+                        st.markdown(f"**Description:** {sec.get('Description', '')}")
+                        st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
+                        st.caption(f"Relevance score: {score:.3f}")
 
     # --- AI MODE ---
     elif mode == "Ask AI":
@@ -198,9 +149,18 @@ if submit and user_case.strip():
             retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
             ai_answer = generate_ai_answer(query, retrieved)
 
-        st.success(ai_answer)
-        st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
-        for sec, score in retrieved:
-            with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
-                st.write(sec.get('Description', ''))
-                st.caption(f"Relevance score: {score:.3f}")
+        with col2:
+            st.success(ai_answer)
+
+            st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
+            for sec, score in retrieved:
+                with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
+                    st.write(sec.get('Description', ''))
+                    st.caption(f"Relevance score: {score:.3f}")
+
+
+
+
+
+
+
