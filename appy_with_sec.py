@@ -62,14 +62,18 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 # Input Section
 # -----------------------------
 
+# -----------------------------
+# Input Section
+# -----------------------------
+
 col1, col2, col3 = st.columns([1, 8, 1])
 
 with col2:
-    # Text area for user input
+    # Text area for user input (small initial height, expands automatically)
     user_case = st.text_area(
         "Enter your case description or question:",
         placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
-        height=180,
+        height=40,  # small initial height for one line
         key="user_input"
     )
 
@@ -87,7 +91,6 @@ with col2:
     with btn_col:
         st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
         submit = st.button("➜")
-
 
 
 
@@ -157,6 +160,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
