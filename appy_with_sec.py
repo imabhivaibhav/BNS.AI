@@ -8,8 +8,6 @@ from datetime import datetime
 
 from ai_mode import retrieve_top_sections, generate_ai_answer
 
-
-
 # -----------------------------
 # Setup
 # -----------------------------
@@ -50,7 +48,7 @@ today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(f"""
 <div style="width:100%; display:flex; justify-content:center;">
     <div style="text-align:center; font-size:20px; padding:15px; border-radius:10px;">
-        👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
+        Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
         {today}.
     </div>
 </div>
@@ -61,21 +59,32 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 # -----------------------------
 # Input Section
 # -----------------------------
-
 col1, col2, col3 = st.columns([1, 8, 1])
 
 with col2:
-    # Text area for user input
+    # Text area for user input (narrow height, auto-expanding)
     user_case = st.text_area(
         "Enter your case description or question:",
         placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
-        height=180,
+        height=40,  # initially narrow height
         key="user_input"
     )
 
-    # Create three columns: mode on left, spacer in middle, button on far right
-    mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
+    # Auto-resize for text area
+    st.markdown("""
+    <script>
+    const textarea = window.parent.document.querySelector('textarea[aria-label="Enter your case description or question:"]');
+    if(textarea){
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
+    # Mode selector and submit button
+    mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
     with mode_col:
         mode = st.radio(
             "",
@@ -83,13 +92,9 @@ with col2:
             horizontal=True,
             key="mode_inline"
         )
-
     with btn_col:
-        st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
+        st.markdown("<br>", unsafe_allow_html=True)
         submit = st.button("➜")
-
-
-
 
 # -----------------------------
 # Main Logic
@@ -151,16 +156,8 @@ if submit and user_case.strip():
 
         with col2:
             st.success(ai_answer)
-
             st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
             for sec, score in retrieved:
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
-
-
-
-
-
-
-
