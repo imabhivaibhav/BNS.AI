@@ -57,24 +57,41 @@ st.markdown(f"""
 
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
-# -----------------------------
-# Unified Chat Input Container
-# -----------------------------
 col1, col2, col3 = st.columns([1, 8, 1])
 with col2:
-    # Container div with same color as text input
     st.markdown("""
-    <div style="
-        display:flex;
-        flex-direction:column;
-        padding:10px;
-        border:1px solid #ddd;
-        border-radius:8px;
-        background-color:#f0f0f0;  /* same as text area bg */
-    ">
+    <style>
+    /* Container style */
+    .unified-container {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px 15px 10px 15px;
+    }
+
+    /* Remove margins between widgets */
+    .unified-container .stTextArea > div > div > textarea {
+        margin-bottom: 0 !important;
+        border-radius: 8px 8px 0 0;
+    }
+    .unified-container .stRadio > div {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .unified-container .stButton > button {
+        border-radius: 0 0 8px 8px;
+        margin-top: 0 !important;
+        width: 100%;
+        font-size: 22px;
+        height: 45px;
+    }
+    </style>
+
+    <div class="unified-container">
     """, unsafe_allow_html=True)
 
-    # Text area
     user_case = st.text_area(
         "",
         placeholder="Type your case or question here...",
@@ -83,7 +100,6 @@ with col2:
         label_visibility="collapsed"
     )
 
-    # Inline mode selection
     mode = st.radio(
         "",
         ["Find Matching Sections", "Ask AI"],
@@ -92,10 +108,10 @@ with col2:
         label_visibility="collapsed"
     )
 
-    # Arrow button
     submit = st.button("➜", key="submit_arrow", help="Send your message")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # -----------------------------
@@ -165,6 +181,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
