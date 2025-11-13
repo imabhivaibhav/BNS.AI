@@ -62,31 +62,34 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 # Input Section
 # -----------------------------
 
-col1, col2, col3 = st.columns([1, 8, 1])
+# -----------------------------
+# Input Section (Updated Layout)
+# -----------------------------
+col1, col2, col3 = st.columns([1, 6, 1])  # narrower center column
 
 with col2:
-    # Text area for user input
-    user_case = st.text_area(
-        "Enter your case description or question:",
-        placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
-        height=180,
-        key="user_input"
-    )
-
-    # Create three columns: mode on left, spacer in middle, button on far right
-    mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
-
-    with mode_col:
-        mode = st.radio(
-            "",
-            ["Find Matching Sections", "Ask AI"],
-            horizontal=True,
-            key="mode_inline"
+    # Horizontal layout: input box + button
+    input_col, btn_col = st.columns([8, 1])
+    
+    with input_col:
+        user_case = st.text_input(
+            "Enter your case description or question:",
+            placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
+            key="user_input",
+            label_visibility="collapsed"
         )
 
     with btn_col:
-        st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
         submit = st.button("➜")
+
+    # Mode options directly below the input box
+    mode = st.radio(
+        "",
+        ["Find Matching Sections", "Ask AI"],
+        horizontal=True,
+        key="mode_inline"
+    )
+
 
 
 
@@ -157,6 +160,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
