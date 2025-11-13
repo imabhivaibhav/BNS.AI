@@ -1,3 +1,4 @@
+# wal_ai_chat.py
 import json
 import re
 import streamlit as st
@@ -12,11 +13,10 @@ from ai_mode import retrieve_top_sections, generate_ai_answer
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
+
 st.set_page_config(page_title="WAL.AI", layout="wide", initial_sidebar_state="collapsed")
 
-# -----------------------------
 # Load dataset
-# -----------------------------
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
@@ -24,18 +24,14 @@ def load_sections():
 
 sections_data = load_sections()
 
-# -----------------------------
 # Load model for semantic search
-# -----------------------------
 @st.cache_resource
 def load_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
 model = load_model()
 
-# -----------------------------
 # Embed sections
-# -----------------------------
 @st.cache_data
 def embed_sections(sections):
     texts = [
@@ -46,118 +42,85 @@ def embed_sections(sections):
 
 section_embeddings = embed_sections(sections_data)
 
+# Initialize chat history
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
 # -----------------------------
 # UI Header
 # -----------------------------
 today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(f"""
-<div style="width:100%; display:flex; justify-content:center;">
-    <div style="text-align:center; font-size:20px; padding:15px; border-radius:10px;">
-        👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
-        {today}.
-    </div>
+<div style="width:100%; text-align:center; padding:15px; border-radius:10px;">
+    👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
+    {today}.
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center; color:#28a745; font-size:120px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
 # -----------------------------
-# Initialize session state
-# -----------------------------
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# -----------------------------
-# Chat display container
+# Chat Display Area
 # -----------------------------
 chat_container = st.container()
 
-# -----------------------------
-# Function to render chat history
-# -----------------------------
-def render_chat():
-    with chat_container:
-        for entry in st.session_state.chat_history:
-            st.markdown(f"**Q:** {entry['query']}")
-            
-            if entry["mode"] == "Find Matching Sections":
-                res = entry["response"]
-                if res and res["indices"]:
-                    for idx, score in zip(res["indices"], res["scores"]):
-                        sec = sections_data[idx]
-                        st.markdown(f"- **Section {sec.get('Section','')}: {sec.get('Title','')}**")
-                        st.markdown(f"  - Description: {sec.get('Description','')}")
-                        st.markdown(f"  - Punishment: {sec.get('Punishment','')}")
-                        st.caption(f"Relevance score: {score:.3f}")
-                else:
-                    st.write("No matching sections found.")
-            
-            elif entry["mode"] == "Ask AI":
-                res = entry["response"]
-                if res:
-                    st.success(res["ai_answer"])
-                    st.markdown("**Referenced Sections:**")
-                    for sec, score in res["retrieved"]:
-                        st.markdown(f"- **Section {sec.get('Section','')}: {sec.get('Title','')}**")
-                        st.markdown(f"  - Description: {sec.get('Description','')}")
-                        st.caption(f"Relevance score: {score:.3f}")
-            st.markdown("---")
+for entry in st.session_state.chat_history:
+    query = entry["query"]
+    response = entry["response"]
+    mode = entry["mode"]
 
-# -----------------------------
-# Input area at the bottom
-# -----------------------------
-# Use a fixed container at bottom
-input_container = st.container()
-
-with input_container:
-    # CSS to fix at bottom
-    st.markdown("""
-        <style>
-        .fixed-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f0f2f6;
-            padding: 10px 20px 20px 20px;
-            z-index: 100;
-        }
-        .stTextArea>div>div>textarea {
-            min-height: 50px;
-            max-height: 200px;
-        }
-        </style>
-        <div class="fixed-bottom"></div>
+    # Display question
+    chat_container.markdown(f"""
+    <div style="width:80%; margin:auto; padding:10px; background-color:#f0f2f6; border-radius:8px; margin-top:10px;">
+        <b>You:</b> {query}
+    </div>
     """, unsafe_allow_html=True)
 
-    cols = st.columns([8, 1])
-    with cols[0]:
-        user_input = st.text_area(
-            "",
-            placeholder="Type your case/question here...",
-            key="chat_input",
-            label_visibility="collapsed",
-        )
-    with cols[1]:
-        submit = st.button("➜", key="chat_submit")
-
-    # Mode selector below input
-    mode = st.radio(
-        "Mode:",
-        ["Find Matching Sections", "Ask AI"],
-        horizontal=True,
-        key="chat_mode"
-    )
+    if response:
+        # Display answer
+        chat_container.markdown(f"""
+        <div style="width:80%; margin:auto; padding:15px; background-color:#ffffff; border-radius:8px; margin-top:5px; border:1px solid #ddd;">
+            <b>WAL.AI ({mode}):</b><br>{response}
+        </div>
+        """, unsafe_allow_html=True)
 
 # -----------------------------
-# Handle user input
+# Input Section (Fixed Bottom)
+# -----------------------------
+with st.container():
+    st.markdown("<br><br>")  # spacing
+
+    with st.form(key="chat_form", clear_on_submit=True):
+        cols = st.columns([8, 1])
+        with cols[0]:
+            user_input = st.text_area(
+                "",
+                placeholder="Type your case/question here...",
+                key="chat_input",
+                label_visibility="collapsed",
+                height=60
+            )
+        with cols[1]:
+            submit = st.form_submit_button("➜")
+
+        mode = st.radio(
+            "Mode:",
+            ["Find Matching Sections", "Ask AI"],
+            horizontal=True,
+            key="chat_mode"
+        )
+
+# -----------------------------
+# Main Logic
 # -----------------------------
 if submit and user_input.strip():
     query = user_input.strip()
-    entry = {"query": query, "mode": mode, "response": None}
+    entry = {"query": query, "mode": mode, "response": ""}
 
-    # --- Find Matching Sections ---
+    # --- SEARCH MODE ---
     if mode == "Find Matching Sections":
+        matched_sections = []
+
         section_numbers = re.findall(r"\d+", query)
         subqueries = re.split(r",| and | or ", query)
         subqueries = [q.strip() for q in subqueries if q.strip()]
@@ -172,39 +135,39 @@ if submit and user_input.strip():
             for sq in subqueries:
                 sq_emb = model.encode(sq, convert_to_tensor=True)
                 sims = util.cos_sim(sq_emb, section_embeddings)[0]
+
                 top_k = min(10, len(sims))
                 top_idx = torch.argsort(sims, descending=True)[:top_k]
                 top_scores = sims[top_idx]
                 median_score = float(torch.median(top_scores))
                 threshold = max(0.45, median_score - 0.05)
+
                 for idx, score in zip(top_idx.tolist(), top_scores.tolist()):
                     if score >= threshold:
                         matched[idx] = max(matched.get(idx, 0), float(score))
 
         if matched:
             sorted_matched = sorted(matched.items(), key=lambda x: x[1], reverse=True)[:10]
-            indices, scores = zip(*sorted_matched)
+            response_text = ""
+            for idx, score in sorted_matched:
+                sec = sections_data[idx]
+                response_text += f"**Section {sec.get('Section', '')}: {sec.get('Title', '')}**\n"
+                response_text += f"{sec.get('Description', '')}\nPunishment: {sec.get('Punishment', '')}\nRelevance: {score:.3f}\n\n"
+            entry["response"] = response_text
         else:
-            indices, scores = [], []
+            entry["response"] = "No matching sections found. Try describing your case differently."
 
-        entry["response"] = {"indices": indices, "scores": scores}
-
-    # --- AI Mode ---
+    # --- AI MODE ---
     elif mode == "Ask AI":
         retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
         ai_answer = generate_ai_answer(query, retrieved)
-        entry["response"] = {"ai_answer": ai_answer, "retrieved": retrieved}
 
-    # Add entry to chat history
+        response_text = ai_answer + "\n\nReferenced Sections:\n"
+        for sec, score in retrieved:
+            response_text += f"Section {sec.get('Section', '')}: {sec.get('Title', '')} - {sec.get('Description', '')} (Relevance: {score:.3f})\n\n"
+
+        entry["response"] = response_text
+
     st.session_state.chat_history.append(entry)
-
-    # Clear input box after sending
-    st.session_state.setdefault("chat_input", "")
-    st.session_state["chat_input"] = ""
-
-
-# -----------------------------
-# Render chat history
-# -----------------------------
-render_chat()
+    st.experimental_rerun()  # rerun to show updated chat above
 
