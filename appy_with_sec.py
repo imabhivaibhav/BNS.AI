@@ -147,7 +147,7 @@ if submit and user_case.strip():
             ai_answer = generate_ai_answer(query, retrieved)
 
         with col2:
-            st.markdown("<h3 style='text-align:center;'>AI Response:</h3>", unsafe_allow_html=True)
+            
             st.success(ai_answer)
 
             st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
@@ -155,3 +155,4 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
