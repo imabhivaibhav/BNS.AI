@@ -63,16 +63,6 @@ with col2:
     # Outer container with padding and background similar to text input box
     st.markdown("""
     <style>
-    .outer-container {
-        background-color: #252934;  /* same as text input bg */
-        border-radius: 10px;
-        padding: 10px 15px 15px 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
     .stTextArea > div > textarea {
         height: 100px !important;  /* narrower height */
         background-color: #252934 !important;
@@ -205,6 +195,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
