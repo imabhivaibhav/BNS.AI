@@ -7,7 +7,7 @@ import nltk
 from datetime import datetime
 
 from ai_mode import retrieve_top_sections, generate_ai_answer
-from wal_ai_history import search_history_ui
+
 
 
 # -----------------------------
@@ -157,6 +157,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
