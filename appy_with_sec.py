@@ -59,71 +59,32 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 
 
 col1, col2, col3 = st.columns([1, 8, 1])
+
 with col2:
-    # Outer container with padding and background similar to text input box
-    st.markdown("""
-    <style>
-    .stTextArea > div > textarea {
-        height: 100px !important;  /* narrower height */
-        background-color: #252934 !important;
-        color: white !important;
-        border-radius: 8px !important;
-        border: none !important;
-        padding: 10px !important;
-    }
-    .mode-submit-row {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    .stRadio > div {
-        color: white;
-        font-size: 16px;
-        margin-bottom: 0px !important;
-    }
-    .stButton > button {
-        background-color: #252934 !important;
-        border: 1px solid #444c56 !important;
-        border-radius: 8px !important;
-        font-size: 24px !important;
-        padding: 6px 14px !important;
-        cursor: pointer;
-        color: white !important;
-    }
-    .stButton > button:hover {
-        background-color: #3b4252 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    # Input container
+    st.markdown(
+        """
+        <div style="display:flex; flex-direction:column;">
+        """,
+        unsafe_allow_html=True
+    )
 
-    # Outer container start
-    st.markdown('<div class="outer-container">', unsafe_allow_html=True)
-
-    # Text area
+    # Text area for user input
     user_case = st.text_area(
-        "Type your case or question here...",
-        placeholder="Type your case or question here...",
+        "Enter your case description or question:",
+        placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
+        height=180,
         key="user_input"
     )
 
-    # Mode and Submit button row inside container
-    st.markdown('<div class="mode-submit-row">', unsafe_allow_html=True)
-
-    # Mode radio
+    # Inline mode selection (radio buttons like ChatGPT)
     mode = st.radio(
-        "",
+        "Mode:",
         ["Find Matching Sections", "Ask AI"],
         horizontal=True,
         key="mode_inline"
     )
 
-    # Submit button (arrow)
-    submit = st.button("➜", key="submit_arrow", help="Send your message")
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Outer container end
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 
@@ -195,6 +156,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
