@@ -77,6 +77,7 @@ with col2:
 
     # Inline mode selection (radio buttons like ChatGPT)
     mode = st.radio(
+        "Mode",
         ["Find Matching Sections", "Ask AI"],
         horizontal=True,
         key="mode_inline"
@@ -154,5 +155,6 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
