@@ -73,13 +73,13 @@ with col2:
     )
 
     # Create three columns: mode on left, spacer in middle, button on far right
-    mode_col, spacer_col, btn_col = st.columns([3, 6, 1])
+    mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
 
     with mode_col:
         mode = st.radio(
             "Mode:",
             ["Find Matching Sections", "Ask AI"],
-            horizontal=False,
+            horizontal=True,
             key="mode_inline"
         )
 
@@ -153,6 +153,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
