@@ -48,12 +48,6 @@ def generate_ai_answer(question, retrieved_sections):
         )
     }
 
-
-    user_message = {
-        "role": "user",
-        "content": f"Based on the following Bhartiya Nyay Sanhita (BNS) sections:\n{context}\n\nQuestion: {question}\nAnswer concisely."
-    }
-
     payload = {
         "model": MODEL_ID,
         "messages": [system_message, user_message],
@@ -100,4 +94,5 @@ if __name__ == "__main__":
 
     answer = generate_ai_answer(query, retrieved_sections)
     print("\nAI Answer:\n", answer)
+
 
