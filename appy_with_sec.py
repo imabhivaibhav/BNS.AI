@@ -176,9 +176,10 @@ for entry in st.session_state.chat_history:
         <b>You:</b> {entry['query']}
     </div>
     """, unsafe_allow_html=True)
-    if entry["response"]:
-        chat_container.markdown(f"""
-        <div style="width:80%; margin:auto; padding:15px; background-color:#ffffff; border-radius:8px; margin-top:5px; border:1px solid #ddd;">
-            <b>WAL.AI ({entry['mode']}):</b><br>{entry['response']}
-        </div>
-        """, unsafe_allow_html=True)
+if entry["response"]:
+    chat_container.markdown(f"""
+    <div style="width:80%; margin:auto; padding:15px; background-color:#ffffff; border-radius:8px; margin-top:5px; border:1px solid #ddd;">
+    <b>WAL.AI ({entry['mode']}):</b><br>{entry['response']}
+    </div>
+    """, unsafe_allow_html=True)
+
