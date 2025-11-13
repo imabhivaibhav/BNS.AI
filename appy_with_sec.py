@@ -72,8 +72,8 @@ with col2:
         key="user_input"
     )
 
-    # Create a row: mode selection + submit button
-    mode_col, btn_col, spacer_col = st.columns([6, 1, 1])
+    # Create three columns: mode on left, spacer in middle, button on far right
+    mode_col, spacer_col, btn_col = st.columns([3, 6, 1])
 
     with mode_col:
         mode = st.radio(
@@ -87,7 +87,7 @@ with col2:
         st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
         submit = st.button("➜")
 
-    # Optional spacer_col is just empty to provide spacing to the right
+    # spacer_col left empty to push button right
 
 
 
@@ -158,5 +158,6 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
