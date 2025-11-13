@@ -120,21 +120,40 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 # Bottom fixed input and mode
 # -----------------------------
 # Use Streamlit components for Python interactivity
-mode = st.radio(
-    "",
-    ["Find Matching Sections", "Ask AI"],
-    horizontal=True,
-    key="mode_inline_bottom"
-)
+# -----------------------------
+# Input Section (Centered, ChatGPT-style)
+# -----------------------------
+st.markdown("<br><br>", unsafe_allow_html=True)  # spacing from top
 
-user_case = st.text_area(
-    "",
-    placeholder="Type your case or question here...",
-    key="user_input_bottom",
-    height=40
-)
+# Center the input area
+col1, col2, col3 = st.columns([1, 6, 1])  # narrow center column
 
-submit = st.button("➜")
+with col2:
+    # Input and button in the same row
+    input_col, btn_col = st.columns([8, 1])
+
+    with input_col:
+        user_case = st.text_area(
+            "",
+            placeholder="Type your case or question here...",
+            key="user_input",
+            height=50  # initial height; grows with content
+        )
+
+    with btn_col:
+        st.markdown("<br>", unsafe_allow_html=True)  # tiny vertical alignment tweak
+        submit = st.button("➜")
+
+    # Mode selector directly below input
+    mode = st.radio(
+        "",
+        ["Find Matching Sections", "Ask AI"],
+        horizontal=True,
+        key="mode_inline"
+    )
+
+search_history_ui()
+
 
 # -----------------------------
 # Main Logic
@@ -199,3 +218,4 @@ if submit and user_case.strip():
             with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                 st.write(sec.get('Description', ''))
                 st.caption(f"Relevance score: {score:.3f}")
+
