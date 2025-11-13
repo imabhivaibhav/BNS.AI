@@ -1,4 +1,3 @@
-# wal_ai.py
 import json
 import re
 import streamlit as st
@@ -77,11 +76,15 @@ chat_container = st.container()
 # -----------------------------
 # Input section at the bottom
 # -----------------------------
+# Automatically clear input after submission
+default_input = ""  
+
 user_input = st.text_area(
     "Type your case/question here...",
     placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
     height=80,
-    key="chat_input"
+    key="chat_input",
+    value=default_input
 )
 
 mode = st.radio(
@@ -141,7 +144,6 @@ if submit and user_input.strip():
 
     # Add entry to chat history
     st.session_state.chat_history.append(entry)
-    st.session_state.chat_input = ""  # Clear input box after sending
 
 # -----------------------------
 # Render chat history
