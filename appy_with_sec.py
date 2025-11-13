@@ -60,17 +60,10 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 # -----------------------------
 # Input Section
 # -----------------------------
+
 col1, col2, col3 = st.columns([1, 8, 1])
 
 with col2:
-    # Input container
-    st.markdown(
-        """
-        <div style="display:flex; flex-direction:column;">
-        """,
-        unsafe_allow_html=True
-    )
-
     # Text area for user input
     user_case = st.text_area(
         "Enter your case description or question:",
@@ -79,16 +72,25 @@ with col2:
         key="user_input"
     )
 
-    # Inline mode selection (radio buttons like ChatGPT)
-    mode = st.radio(
-        "Mode:",
-        ["Find Matching Sections", "Ask AI"],
-        horizontal=True,
-        key="mode_inline"
-    )
+    # Create a row: mode selection + submit button
+    mode_col, btn_col, spacer_col = st.columns([6, 1, 1])
 
-    # Submit button
-    submit = st.button("➜")
+    with mode_col:
+        mode = st.radio(
+            "Mode:",
+            ["Find Matching Sections", "Ask AI"],
+            horizontal=True,
+            key="mode_inline"
+        )
+
+    with btn_col:
+        st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
+        submit = st.button("➜")
+
+    # Optional spacer_col is just empty to provide spacing to the right
+
+
+
 
 # -----------------------------
 # Main Logic
@@ -156,4 +158,5 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
