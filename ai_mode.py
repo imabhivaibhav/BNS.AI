@@ -7,11 +7,7 @@ import torch
 # -----------------------------
 # CONFIGURATION
 # -----------------------------
-# Retrieve your Hugging Face API token from Streamlit secrets
 HF_TOKEN = st.secrets["HF_TOKEN"]
-
-# Use a model that supports chat via HF Router
-# Example: "gpt2" is for testing; replace with an actual HF Router chat model
 MODEL_ID = "MiniMaxAI/MiniMax-M2:novita"
 
 # -----------------------------
@@ -32,20 +28,30 @@ def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k
 def generate_ai_answer(question, retrieved_sections):
     """
     Generates an AI-based answer using context from retrieved legal sections.
+    Ensures the model answers ONLY based on retrieved sections.
     """
+    if len(retrieved_sections) == 0:
+        # No relevant sections found
+        return "❌ I cannot answer that as it is outside the provided legal sections."
+
     # Combine retrieved sections into a single context string
     context = "\n\n".join(
         [f"Section {s['Section']}: {s['Title']}\n{s['Description']}" for s, _ in retrieved_sections]
     )
 
-    # Construct the chat message
     system_message = {
         "role": "system",
         "content": (
-        "You are an expert Indian legal assistant. "
-        "You can only answer questions based on the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
-        "If a question is outside these sections, respond with: '❌ I cannot answer that as it is outside the provided legal sections.'"
+            "You are an expert Indian legal assistant. "
+            "You can only answer questions based on the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
+            "If a question is outside these sections, respond with: "
+            "'❌ I cannot answer that as it is outside the provided legal sections.'"
         )
+    }
+
+    user_message = {
+        "role": "user",
+        "content": f"Context:\n{context}\n\nQuestion: {question}\nAnswer concisely based only on the context."
     }
 
     payload = {
@@ -75,7 +81,6 @@ def generate_ai_answer(question, retrieved_sections):
     except Exception as e:
         return f"⚠️ AI generation error: {str(e)}"
 
-
 # -----------------------------
 # Example (for testing locally)
 # -----------------------------
@@ -89,10 +94,12 @@ if __name__ == "__main__":
     model = None  # Normally a SentenceTransformer model
     section_embeddings = torch.rand((2, 768))
 
-    query = "What is the punishment for murder under BNS?"
-    retrieved_sections = [(sections[0], 0.95), (sections[1], 0.85)]
+    query1 = "What is the punishment for murder under BNS?"
+    retrieved_sections1 = [(sections[0], 0.95), (sections[1], 0.85)]
+    answer1 = generate_ai_answer(query1, retrieved_sections1)
+    print("\nAI Answer (legal question):\n", answer1)
 
-    answer = generate_ai_answer(query, retrieved_sections)
-    print("\nAI Answer:\n", answer)
-
-
+    query2 = "Who won the 2020 Olympics?"
+    retrieved_sections2 = []  # No relevant sections
+    answer2 = generate_ai_answer(query2, retrieved_sections2)
+    print("\nAI Answer (outside legal dataset):\n", answer2)
