@@ -90,7 +90,7 @@ for entry in st.session_state.chat_history:
 with st.container():
     st.markdown("<br><br>")  # spacing
 
-    with st.form(key="chat_form", clear_on_submit=True):
+with st.form(key="chat_form", clear_on_submit=True):
     cols = st.columns([8, 1])
     with cols[0]:
         user_input = st.text_area(
@@ -182,4 +182,5 @@ if entry["response"]:
     <b>WAL.AI ({entry['mode']}):</b><br>{entry['response']}
     </div>
     """, unsafe_allow_html=True)
+
 
