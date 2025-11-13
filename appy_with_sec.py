@@ -57,60 +57,84 @@ st.markdown(f"""
 
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
+
 col1, col2, col3 = st.columns([1, 8, 1])
 with col2:
+    # Outer container with padding and background similar to text input box
     st.markdown("""
     <style>
-    /* Container style */
-    .unified-container {
-        background-color: #f0f0f0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 10px 15px 10px 15px;
+    .outer-container {
+        background-color: #252934;  /* same as text input bg */
+        border-radius: 10px;
+        padding: 10px 15px 15px 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
-
-    /* Remove margins between widgets */
-    .unified-container .stTextArea > div > div > textarea {
-        margin-bottom: 0 !important;
-        border-radius: 8px 8px 0 0;
+    .stTextArea > div > textarea {
+        height: 100px !important;  /* narrower height */
+        background-color: #252934 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        border: none !important;
+        padding: 10px !important;
     }
-    .unified-container .stRadio > div {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        padding-top: 5px;
-        padding-bottom: 5px;
+    .mode-submit-row {
+        display: flex;
+        align-items: center;
+        gap: 20px;
     }
-    .unified-container .stButton > button {
-        border-radius: 0 0 8px 8px;
-        margin-top: 0 !important;
-        width: 100%;
-        font-size: 22px;
-        height: 45px;
+    .stRadio > div {
+        color: white;
+        font-size: 16px;
+        margin-bottom: 0px !important;
+    }
+    .stButton > button {
+        background-color: #252934 !important;
+        border: 1px solid #444c56 !important;
+        border-radius: 8px !important;
+        font-size: 24px !important;
+        padding: 6px 14px !important;
+        cursor: pointer;
+        color: white !important;
+    }
+    .stButton > button:hover {
+        background-color: #3b4252 !important;
     }
     </style>
-
-    <div class="unified-container">
     """, unsafe_allow_html=True)
 
+    # Outer container start
+    st.markdown('<div class="outer-container">', unsafe_allow_html=True)
+
+    # Text area
     user_case = st.text_area(
-        "",
+        "Type your case or question here...",
         placeholder="Type your case or question here...",
-        height=100,
-        key="user_input",
-        label_visibility="collapsed"
+        key="user_input"
     )
 
+    # Mode and Submit button row inside container
+    st.markdown('<div class="mode-submit-row">', unsafe_allow_html=True)
+
+    # Mode radio
     mode = st.radio(
         "",
         ["Find Matching Sections", "Ask AI"],
         horizontal=True,
-        key="mode_inline",
-        label_visibility="collapsed"
+        key="mode_inline"
     )
 
+    # Submit button (arrow)
     submit = st.button("➜", key="submit_arrow", help="Send your message")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Outer container end
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
@@ -181,6 +205,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
