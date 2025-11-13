@@ -44,7 +44,9 @@ def generate_ai_answer(question, retrieved_sections):
         "content": (
             "You are an expert Indian legal assistant. "
             "You can only answer questions based on the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
-            "If a question is outside these sections, respond with: "
+            "You must NOT provide answers outside these sections. "
+            "Do NOT invent or reference any section that is not in the provided context. "
+            "If a question is outside the context, respond with: "
             "'❌ I cannot answer that as it is outside the provided legal sections.'"
         )
     }
@@ -94,12 +96,20 @@ if __name__ == "__main__":
     model = None  # Normally a SentenceTransformer model
     section_embeddings = torch.rand((2, 768))
 
+    # Legal question (within context)
     query1 = "What is the punishment for murder under BNS?"
     retrieved_sections1 = [(sections[0], 0.95), (sections[1], 0.85)]
     answer1 = generate_ai_answer(query1, retrieved_sections1)
     print("\nAI Answer (legal question):\n", answer1)
 
+    # Out-of-topic question
     query2 = "Who won the 2020 Olympics?"
     retrieved_sections2 = []  # No relevant sections
     answer2 = generate_ai_answer(query2, retrieved_sections2)
     print("\nAI Answer (outside legal dataset):\n", answer2)
+
+    # Out-of-topic but trying to hallucinate a section
+    query3 = "Explain criminal law about theft in India."
+    retrieved_sections3 = []  # No relevant sections
+    answer3 = generate_ai_answer(query3, retrieved_sections3)
+    print("\nAI Answer (hallucination test):\n", answer3)
