@@ -91,24 +91,24 @@ with st.container():
     st.markdown("<br><br>")  # spacing
 
     with st.form(key="chat_form", clear_on_submit=True):
-        cols = st.columns([8, 1])
-        with cols[0]:
-            user_input = st.text_area(
-                "",
-                placeholder="Type your case/question here...",
-                key="chat_input",
-                label_visibility="collapsed",
-                height=60
-            )
-        with cols[1]:
-            submit = st.form_submit_button("➜")
-
-        mode = st.radio(
-            "Mode:",
-            ["Find Matching Sections", "Ask AI"],
-            horizontal=True,
-            key="chat_mode"
+    cols = st.columns([8, 1])
+    with cols[0]:
+        user_input = st.text_area(
+            "",
+            placeholder="Type your case/question here...",
+            key="chat_input",
+            label_visibility="collapsed",
+            height=60
         )
+    with cols[1]:
+        submit = st.form_submit_button("➜")
+
+    mode = st.radio(
+        "Mode:",
+        ["Find Matching Sections", "Ask AI"],
+        horizontal=True,
+        key="chat_mode"
+    )
 
 # -----------------------------
 # Main Logic
@@ -169,5 +169,16 @@ if submit and user_input.strip():
         entry["response"] = response_text
 
     st.session_state.chat_history.append(entry)
-    st.experimental_rerun()  # rerun to show updated chat above
-
+    chat_container = st.container()
+for entry in st.session_state.chat_history:
+    chat_container.markdown(f"""
+    <div style="width:80%; margin:auto; padding:10px; background-color:#f0f2f6; border-radius:8px; margin-top:10px;">
+        <b>You:</b> {entry['query']}
+    </div>
+    """, unsafe_allow_html=True)
+    if entry["response"]:
+        chat_container.markdown(f"""
+        <div style="width:80%; margin:auto; padding:15px; background-color:#ffffff; border-radius:8px; margin-top:5px; border:1px solid #ddd;">
+            <b>WAL.AI ({entry['mode']}):</b><br>{entry['response']}
+        </div>
+        """, unsafe_allow_html=True)
