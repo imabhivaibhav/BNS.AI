@@ -40,16 +40,17 @@ def generate_ai_answer(question, retrieved_sections):
     )
 
     system_message = {
-        "role": "system",
-        "content": (
-            "You are an expert Indian legal assistant. "
-            "You can only answer questions based on the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
-            "You must NOT provide answers outside these sections. "
-            "Do NOT invent or reference any section that is not in the provided context. "
-            "If a question is outside the context, respond with: "
-            "'❌ I cannot answer that as it is outside the provided legal sections.'"
-        )
-    }
+    "role": "system",
+    "content": (
+        "You are an expert Indian legal assistant. "
+        "You can ONLY answer questions using the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
+        "You MUST NOT invent or reference any section that is NOT in the context. "
+        "If a question is outside the context, your ONLY reply must be exactly: "
+        "'❌ I cannot answer that as it is outside the provided legal sections.' "
+        "Do NOT include any section numbers, titles, or content not in the provided context."
+    )
+}
+
 
     user_message = {
         "role": "user",
@@ -113,3 +114,4 @@ if __name__ == "__main__":
     retrieved_sections3 = []  # No relevant sections
     answer3 = generate_ai_answer(query3, retrieved_sections3)
     print("\nAI Answer (hallucination test):\n", answer3)
+
