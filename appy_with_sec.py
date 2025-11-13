@@ -65,30 +65,71 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 # -----------------------------
 # Input Section (Updated Layout)
 # -----------------------------
-col1, col2, col3 = st.columns([1, 6, 1])  # narrower center column
+# -----------------------------
+# Fixed Bottom Input Section
+# -----------------------------
+st.markdown(
+    """
+    <style>
+    /* Make the input area fixed at bottom */
+    .fixed-bottom-input {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        padding: 10px 20px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 9999;
+    }
 
-with col2:
-    # Horizontal layout: input box + button
+    /* Adjust columns inside the bottom bar */
+    .fixed-bottom-input .stTextArea {
+        width: 85% !important;
+        min-height: 40px;
+        max-height: 200px;
+        overflow-y: auto;
+        resize: none;
+        font-size: 16px;
+    }
+
+    .fixed-bottom-input .stButton {
+        width: 10% !important;
+        min-width: 60px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Create fixed bottom bar
+with st.container():
+    st.markdown('<div class="fixed-bottom-input">', unsafe_allow_html=True)
     input_col, btn_col = st.columns([8, 1])
     
     with input_col:
-        user_case = st.text_input(
-            "Enter your case description or question:",
-            placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
-            key="user_input",
-            label_visibility="collapsed"
+        user_case = st.text_area(
+            "",
+            placeholder="Type your case or question here...",
+            key="user_input_bottom",
+            label_visibility="collapsed",
+            height=40,  # initial height
+            max_chars=None
         )
 
     with btn_col:
         submit = st.button("➜")
 
-    # Mode options directly below the input box
+    # Mode radio buttons directly above input
     mode = st.radio(
         "",
         ["Find Matching Sections", "Ask AI"],
         horizontal=True,
-        key="mode_inline"
+        key="mode_inline_bottom"
     )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
@@ -160,6 +201,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
