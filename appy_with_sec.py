@@ -1,4 +1,3 @@
-# wal_ai.py
 import json
 import re
 import streamlit as st
@@ -6,14 +5,54 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 import nltk
 from datetime import datetime
+import requests
+import os
 
-from ai_mode import retrieve_top_sections, generate_ai_answer
+# -----------------------------
+# AI Mode functions
+# -----------------------------
+HF_TOKEN = st.secrets["HF_TOKEN"]
+MODEL_ID = "MiniMaxAI/MiniMax-M2:novita"  # Example HF chat model
+
+API_URL = "https://api-inference.huggingface.co/v1/chat/completions"
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
+
+def query_hf_chat(payload):
+    response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=90)
+    return response.json()
+
+def generate_ai_answer(question, retrieved_sections):
+    # Combine retrieved sections into context
+    context = "\n\n".join([f"Section {s['Section']}: {s['Title']}\n{s['Description']}" for s, _ in retrieved_sections])
+    prompt = f"You are an expert Indian legal assistant. Based on the following Bhartiya Nyay Sanhita (BNS) sections, answer clearly:\n\n{context}\n\nQuestion: {question}\nAnswer:"
+
+    payload = {
+        "model": MODEL_ID,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 350,
+        "temperature": 0.7,
+        "top_p": 0.9
+    }
+
+    try:
+        result = query_hf_chat(payload)
+        if "choices" in result and len(result["choices"]) > 0:
+            return result["choices"][0]["message"]["content"].strip()
+        else:
+            return "⚠️ Unexpected response from model."
+    except Exception as e:
+        return f"⚠️ AI generation error: {str(e)}"
+
+def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=5):
+    query_emb = model.encode(query, convert_to_tensor=True)
+    sims = torch.nn.functional.cosine_similarity(query_emb.unsqueeze(0), section_embeddings)
+    top_indices = torch.argsort(sims, descending=True)[:top_k]
+    return [(sections_data[i], float(sims[i])) for i in top_indices]
 
 # -----------------------------
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
-
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
 # Load dataset
@@ -24,7 +63,7 @@ def load_sections():
 
 sections_data = load_sections()
 
-# Load model for semantic search
+# Load embedding model
 @st.cache_resource
 def load_model():
     return SentenceTransformer("all-mpnet-base-v2")
@@ -34,10 +73,7 @@ model = load_model()
 # Embed sections
 @st.cache_data
 def embed_sections(sections):
-    texts = [
-        f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}"
-        for sec in sections
-    ]
+    texts = [f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}" for sec in sections]
     return model.encode(texts, convert_to_tensor=True)
 
 section_embeddings = embed_sections(sections_data)
@@ -49,8 +85,7 @@ today = datetime.now().strftime("%A, %B %d, %Y")
 st.markdown(f"""
 <div style="width:100%; display:flex; justify-content:center;">
     <div style="text-align:center; font-size:20px; padding:15px; border-radius:10px;">
-        👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
-        {today}.
+        👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>{today}.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -58,35 +93,18 @@ st.markdown(f"""
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
 # -----------------------------
-# Chat Input Area with Inline Mode
+# Chat-style Input with inline mode selector
 # -----------------------------
 col1, col2, col3 = st.columns([1, 8, 1])
 with col2:
-    # Input container
-    st.markdown("""
-    <div style="display:flex; flex-direction:column;">
-    """, unsafe_allow_html=True)
+    container = st.container()
+    with container:
+        # Mode selector
+        mode = st.radio("", ["Find Matching Sections", "Ask AI"], horizontal=True, label_visibility="collapsed")
 
-    # Text area
-    user_case = st.text_area(
-        "Enter your case description or question:",
-        placeholder="E.g., 'A person killed someone' or 'What is the punishment for theft under BNS?'",
-        height=180,
-        key="user_input"
-    )
-
-    # Inline mode selection (radio buttons like ChatGPT)
-    mode = st.radio(
-        "Mode:",
-        ["Find Matching Sections", "Ask AI"],
-        horizontal=True,
-        key="mode_inline"
-    )
-
-    # Arrow button to send message
-    submit = st.button("➜", key="submit_arrow", help="Send your message")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+        # Text input with arrow button
+        user_case = st.text_area("Type your case or question here...", key="input_box", height=120)
+        submit = st.button("➡️")
 
 # -----------------------------
 # Main Logic
@@ -94,51 +112,35 @@ with col2:
 if submit and user_case.strip():
     query = user_case.strip()
 
-    # --- SEARCH MODE ---
+    # --- SEARCH MODE (hybrid: exact number + semantic) ---
     if mode == "Find Matching Sections":
         with st.spinner("Finding relevant sections..."):
             section_numbers = re.findall(r"\d+", query)
-            subqueries = re.split(r",| and | or ", query)
-            subqueries = [q.strip() for q in subqueries if q.strip()]
+            matched_indices = []
 
-            matched = {}
-            for i, s in enumerate(sections_data):
-                sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
-                if any(num == sec_num for num in section_numbers):
-                    matched[i] = 1.0
+            # First, exact section number match
+            if section_numbers:
+                for i, s in enumerate(sections_data):
+                    sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
+                    if sec_num in section_numbers:
+                        matched_indices.append(i)
 
-            if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
-                for sq in subqueries:
-                    sq_emb = model.encode(sq, convert_to_tensor=True)
-                    sims = util.cos_sim(sq_emb, section_embeddings)[0]
+            # If no number or no matches, do semantic search
+            if not matched_indices:
+                retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=10)
+                matched_indices = [sections_data.index(sec) for sec, _ in retrieved]
 
-                    top_k = min(10, len(sims))
-                    top_idx = torch.argsort(sims, descending=True)[:top_k]
-                    top_scores = sims[top_idx]
-                    median_score = float(torch.median(top_scores))
-                    threshold = max(0.45, median_score - 0.05)
-
-                    for idx, score in zip(top_idx.tolist(), top_scores.tolist()):
-                        if score >= threshold:
-                            matched[idx] = max(matched.get(idx, 0), float(score))
-
-            if matched:
-                sorted_matched = sorted(matched.items(), key=lambda x: x[1], reverse=True)[:10]
-                indices, scores = zip(*sorted_matched)
-            else:
-                indices, scores = [], []
-
+        # Display matched sections
         with col2:
-            if not indices:
+            if not matched_indices:
                 st.warning("No matching sections found. Try describing your case differently.")
             else:
                 st.markdown("<h3 style='text-align:center;'>Relevant Section(s):</h3>", unsafe_allow_html=True)
-                for idx, score in zip(indices, scores):
+                for idx in matched_indices:
                     sec = sections_data[idx]
                     with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                         st.markdown(f"**Description:** {sec.get('Description', '')}")
                         st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
-                        st.caption(f"Relevance score: {score:.3f}")
 
     # --- AI MODE ---
     elif mode == "Ask AI":
@@ -146,6 +148,7 @@ if submit and user_case.strip():
             retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
             ai_answer = generate_ai_answer(query, retrieved)
 
+        # Display AI response and referenced sections
         with col2:
             st.markdown("<h3 style='text-align:center;'>AI Response:</h3>", unsafe_allow_html=True)
             st.success(ai_answer)
@@ -156,4 +159,4 @@ if submit and user_case.strip():
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
 
-# wal_ai.py
+
