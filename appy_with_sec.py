@@ -199,9 +199,12 @@ if submit and user_input.strip():
     st.session_state.chat_history.append(entry)
 
     # Clear input box after sending
-    st.session_state.chat_input = ""
+    st.session_state.setdefault("chat_input", "")
+    st.session_state["chat_input"] = ""
+
 
 # -----------------------------
 # Render chat history
 # -----------------------------
 render_chat()
+
