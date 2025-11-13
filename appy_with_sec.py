@@ -1,71 +1,3 @@
-import json
-import re
-import streamlit as st
-from sentence_transformers import SentenceTransformer, util
-import torch
-import nltk
-from datetime import datetime
-
-from ai_mode import retrieve_top_sections, generate_ai_answer
-
-
-
-# -----------------------------
-# Setup
-# -----------------------------
-nltk.download('punkt', quiet=True)
-
-st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
-
-# Load dataset
-@st.cache_data
-def load_sections():
-    with open("laws_sections.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-sections_data = load_sections()
-
-# Load model for semantic search
-@st.cache_resource
-def load_model():
-    return SentenceTransformer("all-mpnet-base-v2")
-
-model = load_model()
-
-# Embed sections
-@st.cache_data
-def embed_sections(sections):
-    texts = [
-        f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}"
-        for sec in sections
-    ]
-    return model.encode(texts, convert_to_tensor=True)
-
-section_embeddings = embed_sections(sections_data)
-
-# -----------------------------
-# UI Header
-# -----------------------------
-today = datetime.now().strftime("%A, %B %d, %Y")
-st.markdown(f"""
-<div style="width:100%; display:flex; justify-content:center;">
-    <div style="text-align:center; font-size:20px; padding:15px; border-radius:10px;">
-        👋 Welcome to <b>WAL.AI</b> — your intelligent legal advisor.<br>
-        {today}.
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
-
-# -----------------------------
-# Input Section
-# -----------------------------
-
-# -----------------------------
-# Input Section
-# -----------------------------
-
 # -----------------------------
 # Input Section
 # -----------------------------
@@ -73,7 +5,7 @@ st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.
 col1, col2, col3 = st.columns([1, 8, 1])
 
 with col2:
-    # Wrap input and button in a single horizontal div using HTML/CSS
+    # Add CSS for circular button and rotation
     st.markdown("""
     <style>
     .input-button-container {
@@ -82,7 +14,7 @@ with col2:
         gap: 10px;
     }
     .circular-btn {
-        width: 32px;   /* will be 80% of ~40px height of text area */
+        width: 32px;   /* 80% of initial input height ~40px */
         height: 32px;
         border-radius: 50%;
         background-color: #28a745;
@@ -104,10 +36,10 @@ with col2:
     </style>
     """, unsafe_allow_html=True)
 
-    # Container for input and button
+    # Container for input + button
     st.markdown('<div class="input-button-container">', unsafe_allow_html=True)
 
-    # Text area (small initial height, auto-expand)
+    # Text area (small initial height, auto-expands)
     user_case = st.text_area(
         "",
         placeholder="Type your case or question here...",
@@ -115,14 +47,17 @@ with col2:
         key="user_input"
     )
 
-    # Circular button with spinner effect
+    # Hidden Streamlit button to trigger submit logic
+    submit = st.button("hidden_submit", key="submit_trigger", label_visibility="collapsed")
+
+    # Circular button displayed as HTML (visual only, rotation via JS)
     btn_placeholder = st.empty()
     btn_html = '<button class="circular-btn" id="search-btn">➜</button>'
     btn_placeholder.markdown(btn_html, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Mode selector directly below
+    # Mode selector below
     mode = st.radio(
         "",
         ["Find Matching Sections", "Ask AI"],
@@ -130,29 +65,23 @@ with col2:
         key="mode_inline"
     )
 
-
+search_history_ui()
 
 # -----------------------------
-# Handling rotation when loading
+# Rotate button when loading
 # -----------------------------
-if btn_placeholder.button("Submit Trigger"):
-    with st.spinner("Searching..."):
-        # Add class rotate to button dynamically via JS
-        st.components.v1.html("""
+if submit and user_case.strip():
+    # Add class "rotate" to circular button via JS
+    st.components.v1.html("""
         <script>
         const btn = window.parent.document.getElementById('search-btn');
         btn.classList.add('rotate');
         </script>
-        """)
-        # Your search / AI code executes here
+    """, height=0)
 
-
-
-
-# -----------------------------
-# Main Logic
-# -----------------------------
-if submit and user_case.strip():
+    # -----------------------------
+    # Main Logic
+    # -----------------------------
     query = user_case.strip()
 
     # --- SEARCH MODE ---
@@ -215,13 +144,3 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
-
-
-
-
-
-
-
-
-
-
