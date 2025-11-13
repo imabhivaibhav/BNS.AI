@@ -58,20 +58,19 @@ st.markdown(f"""
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
 # -----------------------------
-# Chat Input Area with Inline Mode in Unified Box
+# Unified Chat Input Container
 # -----------------------------
 col1, col2, col3 = st.columns([1, 8, 1])
 with col2:
-    # Unified input container
+    # Container div with same color as text input
     st.markdown("""
     <div style="
-        display:flex; 
-        flex-direction:row; 
-        align-items:center; 
-        padding:10px; 
-        border:1px solid #ddd; 
-        border-radius:8px; 
-        background-color:#f9f9f9;
+        display:flex;
+        flex-direction:column;
+        padding:10px;
+        border:1px solid #ddd;
+        border-radius:8px;
+        background-color:#f0f0f0;  /* same as text area bg */
     ">
     """, unsafe_allow_html=True)
 
@@ -79,12 +78,12 @@ with col2:
     user_case = st.text_area(
         "",
         placeholder="Type your case or question here...",
-        height=100,  # narrower height
+        height=100,
         key="user_input",
         label_visibility="collapsed"
     )
 
-    # Inline mode selection (radio buttons like ChatGPT)
+    # Inline mode selection
     mode = st.radio(
         "",
         ["Find Matching Sections", "Ask AI"],
@@ -93,7 +92,7 @@ with col2:
         label_visibility="collapsed"
     )
 
-    # Arrow button to send message
+    # Arrow button
     submit = st.button("➜", key="submit_arrow", help="Send your message")
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -166,6 +165,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
