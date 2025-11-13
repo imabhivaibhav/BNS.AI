@@ -57,7 +57,9 @@ st.markdown(f"""
 
 st.markdown("<h1 style='text-align:center; color:#28a745; font-size:140px;'>WAL.AI</h1>", unsafe_allow_html=True)
 
-
+# -----------------------------
+# Input Section
+# -----------------------------
 col1, col2, col3 = st.columns([1, 8, 1])
 
 with col2:
@@ -85,9 +87,8 @@ with col2:
         key="mode_inline"
     )
 
-
-
-
+    # Submit button
+    submit = st.button("Submit")
 
 # -----------------------------
 # Main Logic
@@ -148,7 +149,6 @@ if submit and user_case.strip():
             ai_answer = generate_ai_answer(query, retrieved)
 
         with col2:
-            
             st.success(ai_answer)
 
             st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
@@ -156,12 +156,3 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
-
-
-
-
-
-
-
-
-
