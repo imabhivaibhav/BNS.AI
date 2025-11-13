@@ -7,7 +7,7 @@ import streamlit as st
 # CONFIGURATION
 # -----------------------------
 HF_TOKEN = st.secrets["HF_TOKEN"]
-MODEL_ID = "HuggingFaceH4/zephyr-7b-beta"  # smaller, stable model
+MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.3"  # smaller, stable model
 
 # -----------------------------
 # Retrieve top sections based on semantic similarity
@@ -94,3 +94,4 @@ if __name__ == "__main__":
 
     answer = generate_ai_answer(query, retrieved_sections)
     print("\nAI Answer:\n", answer)
+
