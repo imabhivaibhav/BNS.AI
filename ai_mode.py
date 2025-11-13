@@ -41,8 +41,13 @@ def generate_ai_answer(question, retrieved_sections):
     # Construct the chat message
     system_message = {
         "role": "system",
-        "content": "You are an expert Indian legal assistant."
+        "content": (
+        "You are an expert Indian legal assistant. "
+        "You can only answer questions based on the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
+        "If a question is outside these sections, respond with: '❌ I cannot answer that as it is outside the provided legal sections.'"
+        )
     }
+
 
     user_message = {
         "role": "user",
@@ -95,3 +100,4 @@ if __name__ == "__main__":
 
     answer = generate_ai_answer(query, retrieved_sections)
     print("\nAI Answer:\n", answer)
+
