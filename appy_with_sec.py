@@ -79,18 +79,13 @@ with col2:
         mode = st.radio(
             "Mode:",
             ["Find Matching Sections", "Ask AI"],
-            horizontal=True,
+            horizontal=False,
             key="mode_inline"
         )
 
     with btn_col:
         st.markdown("<br>", unsafe_allow_html=True)  # small vertical gap
         submit = st.button("➜")
-
-    # spacer_col left empty to push button right
-
-
-
 
 # -----------------------------
 # Main Logic
@@ -158,6 +153,7 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
 
 
 
