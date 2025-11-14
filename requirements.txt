@@ -2,3 +2,5 @@ streamlit
 sentence-transformers
 torch
 nltk
+duckduckgo-search
+
