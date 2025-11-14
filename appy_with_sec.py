@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 import nltk
 from datetime import datetime
-
+from web_search import search_cases
 from ai_mode import retrieve_top_sections, generate_ai_answer
 
 # -----------------------------
@@ -149,6 +149,7 @@ if submit and user_case.strip():
                         st.caption(f"Relevance score: {score:.3f}")
 
     # --- AI MODE ---
+    cases = search_cases(user_case, max_results=5)
     elif mode == "Ask AI":
         with st.spinner("Analyzing and generating response..."):
             retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
@@ -161,3 +162,4 @@ if submit and user_case.strip():
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
+
