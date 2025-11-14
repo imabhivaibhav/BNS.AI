@@ -4,6 +4,9 @@ import requests
 import streamlit as st
 import torch
 
+# -----------------------------
+# CONFIGURATION
+# -----------------------------
 HF_TOKEN = st.secrets["HF_TOKEN"]
 MODEL_ID = "MiniMaxAI/MiniMax-M2:novita"
 
@@ -11,6 +14,9 @@ MODEL_ID = "MiniMaxAI/MiniMax-M2:novita"
 # Retrieve top sections based on semantic similarity
 # -----------------------------
 def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=5):
+    """
+    Retrieves top-k sections most semantically similar to the query.
+    """
     query_emb = model.encode(query, convert_to_tensor=True)
     sims = torch.nn.functional.cosine_similarity(query_emb.unsqueeze(0), section_embeddings)
     top_indices = torch.argsort(sims, descending=True)[:top_k]
@@ -19,44 +25,31 @@ def retrieve_top_sections(query, sections_data, model, section_embeddings, top_k
 # -----------------------------
 # Generate AI answer using Hugging Face Router API
 # -----------------------------
-def generate_ai_answer(question, retrieved_sections, retrieved_cases=None):
+def generate_ai_answer(question, retrieved_sections):
     """
-    Generate AI answer based on legal sections and optional historical cases.
+    Generates an AI-based answer using context from retrieved legal sections.
+    Ensures the model answers ONLY based on retrieved sections.
     """
-    if len(retrieved_sections) == 0 and not retrieved_cases:
+    if len(retrieved_sections) == 0:
         return "❌ I cannot answer that as it is outside the provided legal sections."
 
-    # Combine retrieved sections
-    context_sections = "\n\n".join(
+    context = "\n\n".join(
         [f"Section {s['Section']}: {s['Title']}\n{s['Description']}" for s, _ in retrieved_sections]
-    ) if retrieved_sections else ""
-
-    # Combine retrieved cases
-    context_cases = ""
-    if retrieved_cases:
-        case_texts = []
-        for i, c in enumerate(retrieved_cases, start=1):
-            case_texts.append(f"{i}. {c['title']}\n{c['snippet']}\nLink: {c['link']}")
-        context_cases = "\n\n".join(case_texts)
+    )
 
     system_message = {
         "role": "system",
         "content": (
             "You are an expert Indian legal assistant. "
-            "Answer questions only based on the Bhartiya Nyay Sanhita (BNS) sections provided "
-            "and the additional historical SC/HC case summaries if provided. "
-            "If a question is outside these, respond with: "
+            "You can only answer questions based on the Bhartiya Nyay Sanhita (BNS) sections provided in the context. "
+            "If a question is outside these sections, respond with: "
             "'❌ I cannot answer that as it is outside the provided legal sections.'"
         )
     }
 
     user_message = {
         "role": "user",
-        "content": (
-            f"Context Sections:\n{context_sections}\n\n"
-            f"Historical Cases:\n{context_cases}\n\n"
-            f"Question: {question}\nAnswer concisely based only on the context."
-        )
+        "content": f"Context:\n{context}\n\nQuestion: {question}\nAnswer concisely based only on the context."
     }
 
     payload = {
