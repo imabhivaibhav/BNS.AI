@@ -4,7 +4,7 @@ from duckduckgo_search import DDGS
 def search_cases(query: str, max_results: int = 5):
     """
     Search DuckDuckGo for Supreme Court / High Court cases.
-    Returns a list of dicts with title, snippet, and link.
+    Returns list of dictionaries with title, snippet, and link.
     """
     search_query = f"{query} Supreme Court case OR High Court landmark case"
     results = []
@@ -22,9 +22,8 @@ def search_cases(query: str, max_results: int = 5):
 
     return results
 
-# Example usage
+# Example test
 if __name__ == "__main__":
-    query = "murder punishment"
-    cases = search_cases(query, max_results=3)
+    cases = search_cases("murder punishment", max_results=3)
     for c in cases:
         print(c)
