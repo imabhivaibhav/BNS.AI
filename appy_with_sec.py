@@ -1,4 +1,3 @@
-# app.py
 import json
 import re
 import streamlit as st
@@ -8,12 +7,13 @@ import nltk
 from datetime import datetime
 
 from ai_mode import retrieve_top_sections, generate_ai_answer
-from web_search import search_cases
+from web_search import search_cases  # your updated DDGS-based web search
 
 # -----------------------------
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
+
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
 # Load dataset
@@ -69,38 +69,109 @@ with col2:
         height=40,
         key="user_input"
     )
-    st.markdown("<br>", unsafe_allow_html=True)
-    submit = st.button("➜")
+
+    st.markdown("""
+    <script>
+    const textarea = window.parent.document.querySelector('textarea[aria-label="Enter your case description or question:"]');
+    if(textarea){
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+    }
+    </script>
+    """, unsafe_allow_html=True)
+
+    mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
+    with mode_col:
+        mode = st.radio(
+            "",
+            ["Find Matching Sections", "Ask AI"],
+            horizontal=True,
+            key="mode_inline"
+        )
+    with btn_col:
+        st.markdown("<br>", unsafe_allow_html=True)
+        submit = st.button("➜")
 
 # -----------------------------
-# Main Logic (AI + Web Search)
+# Main Logic
 # -----------------------------
 if submit and user_case.strip():
     query = user_case.strip()
-    
-    with st.spinner("Analyzing and generating response..."):
-        # AI Answer
-        retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
-        ai_answer = generate_ai_answer(query, retrieved)
-        
-        # Web Search Cases
-        cases = search_cases(query, max_results=5)
 
-    with col2:
-        # AI Result
-        st.success(ai_answer)
-        st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
-        for sec, score in retrieved:
-            with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
-                st.write(sec.get('Description', ''))
-                st.caption(f"Relevance score: {score:.3f}")
+    # --- SEARCH MODE ---
+    if mode == "Find Matching Sections":
+        with st.spinner("Finding relevant sections..."):
+            section_numbers = re.findall(r"\d+", query)
+            subqueries = re.split(r",| and | or ", query)
+            subqueries = [q.strip() for q in subqueries if q.strip()]
 
-        # Web Cases Result
-        st.markdown("<h4>Cases in History:</h4>", unsafe_allow_html=True)
-        if cases:
-            for case in cases:
-                with st.expander(case.get("title", "No title")):
-                    st.write(case.get("snippet", "No snippet"))
-                    st.markdown(f"[Link]({case.get('link', '#')})")
-        else:
-            st.warning("No cases found from web search.")
+            matched = {}
+            for i, s in enumerate(sections_data):
+                sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
+                if any(num == sec_num for num in section_numbers):
+                    matched[i] = 1.0
+
+            if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
+                for sq in subqueries:
+                    sq_emb = model.encode(sq, convert_to_tensor=True)
+                    sims = util.cos_sim(sq_emb, section_embeddings)[0]
+
+                    top_k = min(10, len(sims))
+                    top_idx = torch.argsort(sims, descending=True)[:top_k]
+                    top_scores = sims[top_idx]
+                    median_score = float(torch.median(top_scores))
+                    threshold = max(0.45, median_score - 0.05)
+
+                    for idx, score in zip(top_idx.tolist(), top_scores.tolist()):
+                        if score >= threshold:
+                            matched[idx] = max(matched.get(idx, 0), float(score))
+
+            if matched:
+                sorted_matched = sorted(matched.items(), key=lambda x: x[1], reverse=True)[:10]
+                indices, scores = zip(*sorted_matched)
+            else:
+                indices, scores = [], []
+
+        with col2:
+            if not indices:
+                st.warning("No matching sections found. Try describing your case differently.")
+            else:
+                st.markdown("<h3 style='text-align:center;'>Relevant Section(s):</h3>", unsafe_allow_html=True)
+                for idx, score in zip(indices, scores):
+                    sec = sections_data[idx]
+                    with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
+                        st.markdown(f"**Description:** {sec.get('Description', '')}")
+                        st.markdown(f"**Punishment:** {sec.get('Punishment', '')}")
+                        st.caption(f"Relevance score: {score:.3f}")
+
+    # --- AI MODE ---
+    elif mode == "Ask AI":
+        with st.spinner("Analyzing and generating response..."):
+            # Retrieve top sections
+            retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
+            ai_answer = generate_ai_answer(query, retrieved)
+
+            # Web search for cases
+            cases = search_cases(query, max_results=5)
+
+        with col2:
+            st.success(ai_answer)
+
+            # Referenced sections
+            st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
+            for sec, score in retrieved:
+                with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
+                    st.write(sec.get('Description', ''))
+                    st.caption(f"Relevance score: {score:.3f}")
+
+            # Cases in history
+            if cases:
+                st.markdown("<h4>Cases in History:</h4>", unsafe_allow_html=True)
+                for case in cases:
+                    with st.expander(case.get("title", "No Title")):
+                        st.write(case.get("snippet", ""))
+                        st.markdown(f"[Read more]({case.get('link', '#')})")
+            else:
+                st.info("No historical cases found for this query.")
