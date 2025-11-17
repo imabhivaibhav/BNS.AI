@@ -9,25 +9,24 @@ from sentence_transformers import SentenceTransformer, util
 from ai_mode import retrieve_top_sections, generate_ai_answer
 from web_search import search_cases
 
+nltk.download('punkt', quiet=True)
 
-# -----------------------------  
-# Setup  
 # -----------------------------
-nltk.download("punkt", quiet=True)
-
-
 # Load dataset
+# -----------------------------
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-
-# Load SentenceTransformer Model
+# -----------------------------
+# Load SentenceTransformer model
+# -----------------------------
 def load_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
-
-# Embed sections text
+# -----------------------------
+# Embed all sections
+# -----------------------------
 def embed_sections(sections, model):
     texts = [
         f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}"
@@ -35,9 +34,8 @@ def embed_sections(sections, model):
     ]
     return model.encode(texts, convert_to_tensor=True)
 
-
-# -----------------------------  
-# Section Matching Logic  
+# -----------------------------
+# SEARCH MODE BACKEND LOGIC
 # -----------------------------
 def find_matching_sections(query, sections_data, model, section_embeddings):
     section_numbers = re.findall(r"\d+", query)
@@ -46,13 +44,13 @@ def find_matching_sections(query, sections_data, model, section_embeddings):
 
     matched = {}
 
-    # Direct number match
+    # Direct match by numbers
     for i, s in enumerate(sections_data):
         sec_num = "".join(re.findall(r"\d+", s.get("Section", "")))
         if any(num == sec_num for num in section_numbers):
             matched[i] = 1.0
 
-    # Semantic search
+    # Semantic match
     if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
         for sq in subqueries:
             sq_emb = model.encode(sq, convert_to_tensor=True)
@@ -68,19 +66,16 @@ def find_matching_sections(query, sections_data, model, section_embeddings):
                 if score >= threshold:
                     matched[idx] = max(matched.get(idx, 0), float(score))
 
-    # Sort results
     if matched:
         return sorted(matched.items(), key=lambda x: x[1], reverse=True)[:10]
 
     return []
 
-
-# -----------------------------  
-# AI Mode Logic  
+# -----------------------------
+# AI MODE BACKEND LOGIC
 # -----------------------------
 def run_ai_mode(query, sections_data, model, section_embeddings):
     retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
     ai_answer = generate_ai_answer(query, retrieved)
     cases = search_cases(query, max_results=5)
-
     return ai_answer, retrieved, cases
