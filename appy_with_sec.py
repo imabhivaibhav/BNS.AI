@@ -1,3 +1,5 @@
+# wal_ai_local.py
+
 import json
 import re
 import streamlit as st
@@ -6,8 +8,8 @@ import torch
 import nltk
 from datetime import datetime
 
-from ai_mode import retrieve_top_sections, generate_ai_answer
-from web_search import search_cases  # your updated DDGS-based web search
+from ai_mode_local import retrieve_top_sections, generate_ai_answer_local as generate_ai_answer
+from web_search import search_cases  # Your DDGS-based web search
 
 # -----------------------------
 # Setup
@@ -16,7 +18,7 @@ nltk.download('punkt', quiet=True)
 
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
-# Load dataset
+# Load legal sections
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
@@ -24,12 +26,12 @@ def load_sections():
 
 sections_data = load_sections()
 
-# Load model for semantic search
+# Load sentence-transformer model for semantic search
 @st.cache_resource
-def load_model():
+def load_semantic_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
-model = load_model()
+model = load_semantic_model()
 
 # Embed sections
 @st.cache_data
