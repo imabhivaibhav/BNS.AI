@@ -1,20 +1,19 @@
+# ai_mode.py
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
 
 # -----------------------------
-# Load GPT-2 from Google Drive path
+# Load GPT-2 locally from Drive
 # -----------------------------
-# The Drive path should be mounted via Colab or accessible via PyDrive
-MODEL_PATH = "/content/drive/MyDrive/gpt2_model"  # Update with your Drive path
+MODEL_PATH = "./gpt2_model"  # Local folder jahan model download hoga
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
+model.eval()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def load_gpt2():
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
-    model.eval()
-    model.to(device)
-    return tokenizer, model
+model.to(device)
 
 # -----------------------------
 # Semantic search
@@ -26,9 +25,9 @@ def retrieve_top_sections(query, sections_data, semantic_model, section_embeddin
     return [(sections_data[i], float(sims[i])) for i in top_indices]
 
 # -----------------------------
-# Generate answer using local GPT-2
+# Generate answer locally
 # -----------------------------
-def generate_ai_answer(question, retrieved_sections, tokenizer, model, max_tokens=150):
+def generate_ai_answer(question, retrieved_sections, max_tokens=150):
     if len(retrieved_sections) == 0:
         return "❌ I cannot answer that as it is outside the provided legal sections."
 
@@ -38,7 +37,7 @@ def generate_ai_answer(question, retrieved_sections, tokenizer, model, max_token
 
     prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer concisely based only on the context."
 
-    inputs = tokenizer.encode(prompt, return_tensors="pt").to(model.device)
+    inputs = tokenizer.encode(prompt, return_tensors="pt").to(device)
     outputs = model.generate(
         inputs,
         max_new_tokens=max_tokens,
