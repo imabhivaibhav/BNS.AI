@@ -5,10 +5,11 @@ import re
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import nltk
 from datetime import datetime
 
-from ai_mode_local import retrieve_top_sections, generate_ai_answer_local as generate_ai_answer
+from ai_mode import retrieve_top_sections, generate_ai_answer  # Your local functions
 from web_search import search_cases  # Your DDGS-based web search
 
 # -----------------------------
@@ -18,7 +19,9 @@ nltk.download('punkt', quiet=True)
 
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
+# -----------------------------
 # Load legal sections
+# -----------------------------
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
@@ -26,21 +29,37 @@ def load_sections():
 
 sections_data = load_sections()
 
+# -----------------------------
 # Load sentence-transformer model for semantic search
+# -----------------------------
 @st.cache_resource
 def load_semantic_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
-model = load_semantic_model()
+semantic_model = load_semantic_model()
 
+# -----------------------------
+# Load local GPT-2 model for text generation
+# -----------------------------
+@st.cache_resource
+def load_gpt2_model(path="./gpt2_local"):
+    tokenizer = AutoTokenizer.from_pretrained(path)
+    model = AutoModelForCausalLM.from_pretrained(path)
+    model.eval()
+    return tokenizer, model
+
+tokenizer, gpt2_model = load_gpt2_model()  # Make sure your Drive path is mounted
+
+# -----------------------------
 # Embed sections
+# -----------------------------
 @st.cache_data
 def embed_sections(sections):
     texts = [
         f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}"
         for sec in sections
     ]
-    return model.encode(texts, convert_to_tensor=True)
+    return semantic_model.encode(texts, convert_to_tensor=True)
 
 section_embeddings = embed_sections(sections_data)
 
@@ -117,7 +136,7 @@ if submit and user_case.strip():
 
             if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
                 for sq in subqueries:
-                    sq_emb = model.encode(sq, convert_to_tensor=True)
+                    sq_emb = semantic_model.encode(sq, convert_to_tensor=True)
                     sims = util.cos_sim(sq_emb, section_embeddings)[0]
 
                     top_k = min(10, len(sims))
@@ -152,8 +171,10 @@ if submit and user_case.strip():
     elif mode == "Ask AI":
         with st.spinner("Analyzing and generating response..."):
             # Retrieve top sections
-            retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
-            ai_answer = generate_ai_answer(query, retrieved)
+            retrieved = retrieve_top_sections(query, sections_data, semantic_model, section_embeddings, top_k=4)
+            
+            # Generate answer using **local GPT-2**
+            ai_answer = generate_ai_answer(query, retrieved, tokenizer, gpt2_model, max_length=300)
 
             # Web search for cases
             cases = search_cases(query, max_results=5)
