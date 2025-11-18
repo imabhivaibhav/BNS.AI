@@ -1,22 +1,28 @@
 # wal_ai_local.py
-
 import json
 import re
+import os
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import nltk
 from datetime import datetime
+import nltk
 
-from ai_mode import retrieve_top_sections, generate_ai_answer  # Your local functions
-from web_search import search_cases  # Your DDGS-based web search
+from ai_mode import retrieve_top_sections, generate_ai_answer
+from web_search import search_cases  # Your existing search function
+
+# -----------------------------
+# Download GPT-2 model from Google Drive if not exists
+# -----------------------------
+if not os.path.exists("./gpt2_model"):
+    # Replace YOUR_FOLDER_ID with the Drive folder ID containing model
+    os.system("pip install gdown")
+    os.system("gdown --folder https://drive.google.com/drive/folders/1cDgpRqGolfLMLRtASsH4GsslfFEx-kHM?usp=drive_link -O ./gpt2_model")
 
 # -----------------------------
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
-
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
 # -----------------------------
@@ -30,25 +36,13 @@ def load_sections():
 sections_data = load_sections()
 
 # -----------------------------
-# Load sentence-transformer model for semantic search
+# Load semantic model
 # -----------------------------
 @st.cache_resource
 def load_semantic_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
 semantic_model = load_semantic_model()
-
-# -----------------------------
-# Load local GPT-2 model for text generation
-# -----------------------------
-@st.cache_resource
-def load_gpt2_model(path="./gpt2_local"):
-    tokenizer = AutoTokenizer.from_pretrained(path)
-    model = AutoModelForCausalLM.from_pretrained(path)
-    model.eval()
-    return tokenizer, model
-
-tokenizer, gpt2_model = load_gpt2_model()  # Make sure your Drive path is mounted
 
 # -----------------------------
 # Embed sections
@@ -90,18 +84,6 @@ with col2:
         height=40,
         key="user_input"
     )
-
-    st.markdown("""
-    <script>
-    const textarea = window.parent.document.querySelector('textarea[aria-label="Enter your case description or question:"]');
-    if(textarea){
-        textarea.addEventListener('input', () => {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-        });
-    }
-    </script>
-    """, unsafe_allow_html=True)
 
     mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
     with mode_col:
@@ -169,27 +151,22 @@ if submit and user_case.strip():
 
     # --- AI MODE ---
     elif mode == "Ask AI":
-        with st.spinner("Analyzing and generating response..."):
-            # Retrieve top sections
-            retrieved = retrieve_top_sections(query, sections_data, semantic_model, section_embeddings, top_k=4)
-            
-            # Generate answer using **local GPT-2**
-            ai_answer = generate_ai_answer(query, retrieved, tokenizer, gpt2_model, max_length=300)
+        from ai_mode import tokenizer, model, device
 
-            # Web search for cases
+        with st.spinner("Analyzing and generating response..."):
+            retrieved = retrieve_top_sections(query, sections_data, semantic_model, section_embeddings, top_k=4)
+            ai_answer = generate_ai_answer(query, retrieved, max_tokens=300)
             cases = search_cases(query, max_results=5)
 
         with col2:
             st.success(ai_answer)
 
-            # Referenced sections
             st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
             for sec, score in retrieved:
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
 
-            # Cases in history
             if cases:
                 st.markdown("<h4>Cases in History:</h4>", unsafe_allow_html=True)
                 for case in cases:
