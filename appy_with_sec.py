@@ -1,33 +1,22 @@
-# wal_ai_local.py
 import json
 import re
-import os
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import torch
-from datetime import datetime
 import nltk
+from datetime import datetime
 
 from ai_mode import retrieve_top_sections, generate_ai_answer
-from web_search import search_cases  # Your existing search function
-
-# -----------------------------
-# Download GPT-2 model from Google Drive if not exists
-# -----------------------------
-if not os.path.exists("./gpt2_model"):
-    # Replace YOUR_FOLDER_ID with the Drive folder ID containing model
-    os.system("pip install gdown")
-    os.system("gdown --folder https://drive.google.com/drive/folders/1cDgpRqGolfLMLRtASsH4GsslfFEx-kHM?usp=drive_link -O ./gpt2_model")
+from web_search import search_cases  # your updated DDGS-based web search
 
 # -----------------------------
 # Setup
 # -----------------------------
 nltk.download('punkt', quiet=True)
+
 st.set_page_config(page_title="WAL.AI", layout="centered", initial_sidebar_state="collapsed")
 
-# -----------------------------
-# Load legal sections
-# -----------------------------
+# Load dataset
 @st.cache_data
 def load_sections():
     with open("laws_sections.json", "r", encoding="utf-8") as f:
@@ -35,25 +24,21 @@ def load_sections():
 
 sections_data = load_sections()
 
-# -----------------------------
-# Load semantic model
-# -----------------------------
+# Load model for semantic search
 @st.cache_resource
-def load_semantic_model():
+def load_model():
     return SentenceTransformer("all-mpnet-base-v2")
 
-semantic_model = load_semantic_model()
+model = load_model()
 
-# -----------------------------
 # Embed sections
-# -----------------------------
 @st.cache_data
 def embed_sections(sections):
     texts = [
         f"Section {sec.get('Section', '')}: {sec.get('Title', '')}. {sec.get('Description', '')}"
         for sec in sections
     ]
-    return semantic_model.encode(texts, convert_to_tensor=True)
+    return model.encode(texts, convert_to_tensor=True)
 
 section_embeddings = embed_sections(sections_data)
 
@@ -84,6 +69,18 @@ with col2:
         height=40,
         key="user_input"
     )
+
+    st.markdown("""
+    <script>
+    const textarea = window.parent.document.querySelector('textarea[aria-label="Enter your case description or question:"]');
+    if(textarea){
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
     mode_col, spacer_col, btn_col = st.columns([5, 2, 1])
     with mode_col:
@@ -118,7 +115,7 @@ if submit and user_case.strip():
 
             if subqueries and (not section_numbers or len(subqueries) > len(section_numbers)):
                 for sq in subqueries:
-                    sq_emb = semantic_model.encode(sq, convert_to_tensor=True)
+                    sq_emb = model.encode(sq, convert_to_tensor=True)
                     sims = util.cos_sim(sq_emb, section_embeddings)[0]
 
                     top_k = min(10, len(sims))
@@ -151,22 +148,25 @@ if submit and user_case.strip():
 
     # --- AI MODE ---
     elif mode == "Ask AI":
-        from ai_mode import tokenizer, model, device
-
         with st.spinner("Analyzing and generating response..."):
-            retrieved = retrieve_top_sections(query, sections_data, semantic_model, section_embeddings, top_k=4)
-            ai_answer = generate_ai_answer(query, retrieved, max_tokens=300)
+            # Retrieve top sections
+            retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
+            ai_answer = generate_ai_answer(query, retrieved)
+
+            # Web search for cases
             cases = search_cases(query, max_results=5)
 
         with col2:
             st.success(ai_answer)
 
+            # Referenced sections
             st.markdown("<h4>Referenced Sections:</h4>", unsafe_allow_html=True)
             for sec, score in retrieved:
                 with st.expander(f"Section {sec.get('Section', '')}: {sec.get('Title', '')}"):
                     st.write(sec.get('Description', ''))
                     st.caption(f"Relevance score: {score:.3f}")
 
+            # Cases in history
             if cases:
                 st.markdown("<h4>Cases in History:</h4>", unsafe_allow_html=True)
                 for case in cases:
@@ -175,3 +175,4 @@ if submit and user_case.strip():
                         st.markdown(f"[Read more]({case.get('link', '#')})")
             else:
                 st.info("No historical cases found for this query.")
+
