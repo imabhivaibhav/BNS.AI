@@ -3,5 +3,4 @@ sentence-transformers
 torch
 nltk
 ddgs
-
-
+gdown
