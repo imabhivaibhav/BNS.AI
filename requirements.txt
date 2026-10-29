@@ -4,4 +4,4 @@ torch
 nltk
 duckduckgo_search
 gdown
-google-genai
+google-generativeai
