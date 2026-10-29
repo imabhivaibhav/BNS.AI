@@ -1,31 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Public+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Public+Sans:wght@400;500;600&display=swap');
 
-html, body, [class*="st-"] { font-family: 'Public Sans', system-ui, sans-serif; }
-.block-container { max-width: 820px; padding-top: 1.5rem; padding-bottom: 6rem; }
+/* Font applies to text only - never to icon elements */
+html, body, .stApp, .stMarkdown, .stMarkdown p, label, button, textarea, input {
+  font-family: 'Public Sans', system-ui, sans-serif;
+}
+[data-testid="stIconMaterial"], .material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+}
+
+.block-container { max-width: 780px; padding-top: 1rem; padding-bottom: 7rem; }
 header[data-testid="stHeader"] { background: transparent; }
 
-/* Masthead */
-.masthead { padding: 1.4rem 0 1.2rem; border-bottom: 2px solid #1F3A5F; margin-bottom: 1.2rem; }
-.masthead h1 { font-family: 'Newsreader', Georgia, serif; font-size: 2.6rem; font-weight: 700;
-  color: #1F3A5F; margin: 0; letter-spacing: -0.01em; line-height: 1.1; }
-.masthead p { margin: .35rem 0 0; color: #5B6675; font-size: 1rem; max-width: 60ch; }
-.masthead .date { font-size: .85rem; color: #8A94A3; margin-top: .6rem; }
+.masthead { padding: 1.2rem 0 1rem; border-bottom: 1px solid #D5DAE1; margin-bottom: 1rem; }
+.masthead h1 { font-family: 'Newsreader', Georgia, serif; font-size: 2.4rem; font-weight: 700;
+  color: #1F3A5F; margin: 0; line-height: 1.1; }
+.masthead p { margin: .4rem 0 0; color: #566172; max-width: 58ch; line-height: 1.5; }
 
-/* Section cards */
-.sec-head { font-family: 'Newsreader', Georgia, serif; font-size: 1.05rem; font-weight: 700; color: #1F3A5F; }
-.punish { border-left: 3px solid #B8860B; background: #FBF6E9; padding: .55rem .8rem;
-  border-radius: 0 6px 6px 0; font-size: .95rem; margin-top: .5rem; }
+.sec-head { font-family: 'Newsreader', Georgia, serif; font-size: 1.1rem; font-weight: 700;
+  color: #1F3A5F; margin: .6rem 0 .3rem; }
+.punish { border-left: 3px solid #B8860B; background: #FBF6E9; padding: .5rem .8rem;
+  border-radius: 0 6px 6px 0; font-size: .93rem; margin-top: .5rem; }
 
-/* Case links */
-.case { border: 1px solid #DDE2E9; background: #fff; border-radius: 8px; padding: .75rem .9rem; margin-bottom: .6rem; }
+.case { border: 1px solid #DDE2E9; background: #fff; border-radius: 8px; padding: .7rem .9rem; margin-bottom: .55rem; }
 .case a { font-weight: 600; color: #1F3A5F; text-decoration: none; }
 .case a:hover { text-decoration: underline; }
-.case .src { font-size: .78rem; color: #8A94A3; margin: .15rem 0 .35rem; }
-.case .snip { font-size: .92rem; color: #3B4655; }
+.case .src { font-size: .78rem; color: #8A94A3; margin: .15rem 0 .3rem; }
+.case .snip { font-size: .9rem; color: #3B4655; line-height: 1.45; }
 
-.disclaimer { font-size: .8rem; color: #8A94A3; text-align: center; margin-top: 1rem; }
+.disclaimer { font-size: .78rem; color: #8A94A3; text-align: center; margin-top: 1.2rem; }
 
-[data-testid="stChatMessage"] { background: #fff; border: 1px solid #E3E7ED; border-radius: 10px; }
+[data-testid="stChatMessage"] { background: transparent; border: none; padding: .4rem 0; }
 .stButton > button { border-radius: 8px; border: 1px solid #1F3A5F; color: #1F3A5F; background: #fff; }
 .stButton > button:hover { background: #1F3A5F; color: #fff; border-color: #1F3A5F; }
 @media (max-width: 640px) { .masthead h1 { font-size: 2rem; } }
