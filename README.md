@@ -1,7 +1,10 @@
 # WAL.AI
-To Guide you though LAW
+To Guide you though LAW: BNS (Bharatiya Nyaya Sanhita)
 
-
-### GO To  -  https://bnsai2025.streamlit.app/
-
-#### To Experience WAL.AI
+## Run
+```
+pip install -r requirements.txt
+# .streamlit/secrets.toml me: GEMINI_API_KEY = "..."
+streamlit run app.py
+```
+Live: https://wal.belicit.com/
