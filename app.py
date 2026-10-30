@@ -8,6 +8,8 @@ import backend
 
 ICON = "favicon.png" if os.path.exists("favicon.png") else "⚖️"
 st.set_page_config(page_title="WAL.AI", page_icon=ICON, layout="centered", initial_sidebar_state="auto")
+from belicit_auth import require_login
+user = require_login()
 
 # ---------- Settings data ----------
 THEMES = ["System", "Light", "Dark"]
