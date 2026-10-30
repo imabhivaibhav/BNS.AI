@@ -1,6 +1,8 @@
-streamlit>=1.40
-sentence-transformers
-torch
-nltk
-ddgs
-google-generativeai
+   streamlit
+   sentence-transformers
+   torch
+   nltk
+   ddgs
+   gdown
+   google-generativeai
+   supabase
