@@ -16,8 +16,10 @@ FONTS = {"Inter": "Inter", "Poppins": "Poppins", "Roboto": "Roboto",
 SIZES = {"Small": 14, "Medium": 16, "Large": 18}
 LANGS = {"Auto": "", "English": "Reply in English.", "हिन्दी": "Reply in Hindi using Devanagari script.",
          "Hinglish": "Reply in Hinglish: Hindi written in Roman script."}
-LIGHT = dict(bg="#FFFFFF", surface="#F0F4F9", surface2="#E3E9F2", text="#1F1F1F", muted="#747775", link="#1A0DAB")
-DARK = dict(bg="#131314", surface="#1E1F20", surface2="#2A2B2D", text="#E3E3E3", muted="#9AA0A6", link="#8AB4F8")
+LIGHT = dict(bg="#F6F8FC", surface="#FFFFFF", surface2="#EDF1F8", text="#1B1F27", muted="#667085", link="#1A56DB",
+             border="#DDE3EE", shadow="0 4px 18px rgba(16,24,40,.06)")
+DARK = dict(bg="#15171C", surface="#222630", surface2="#2F3441", text="#EEF1F6", muted="#A3ABBB", link="#8AB4F8",
+            border="#434958", shadow="0 4px 22px rgba(0,0,0,.35)")
 
 T = {
     "en": dict(hello="Hello there", sub="How can I help with the law today?", ask="Ask AI", find="Find Sections",
@@ -28,7 +30,7 @@ T = {
                nomatch="No matching sections found. Try describing the case in different words.",
                disc="WAL.AI gives general information, not legal advice. Consult a lawyer for important matters.",
                saved="Settings are saved in the page URL.",
-               ex=["Someone stole my phone on the bus", "What is BNS section 103?", "Threatening someone over a phone call"]),
+               ex=["📱 Someone stole my phone on the bus", "📖 What is BNS section 103?", "📞 Threatening someone over a phone call"]),
     "hi": dict(hello="नमस्ते", sub="आज मैं कानून से जुड़ी क्या मदद कर सकता हूँ?", ask="AI से पूछें", find="धाराएँ खोजें",
                new="नई चैट", inp="अपना केस या BNS धारा पूछें", settings="सेटिंग्स", theme="थीम",
                accent="रंग", font="फ़ॉन्ट", size="टेक्स्ट साइज़", lang="प्रमुख भाषा",
@@ -37,7 +39,7 @@ T = {
                nomatch="कोई धारा नहीं मिली। केस को दूसरे शब्दों में लिखकर देखें।",
                disc="WAL.AI सामान्य जानकारी देता है, कानूनी सलाह नहीं। ज़रूरी मामलों में वकील से मिलें।",
                saved="सेटिंग्स पेज के URL में सेव होती हैं।",
-               ex=["किसी ने बस में मेरा फोन चुरा लिया", "BNS धारा 103 क्या है?", "फोन पर धमकी देना"]),
+               ex=["📱 किसी ने बस में मेरा फोन चुरा लिया", "📖 BNS धारा 103 क्या है?", "📞 फोन पर धमकी देना"]),
 }
 
 
@@ -90,7 +92,7 @@ with st.sidebar:
         st.session_state.chat = []
         st.rerun()
     st.divider()
-    st.markdown(f"**{t['settings']}**")
+    st.markdown(f"<div class='side-label'>{t['settings']}</div>", unsafe_allow_html=True)
     theme = st.radio(t["theme"], THEMES, index=THEMES.index(pick("theme", THEMES, "System")), key="theme", horizontal=True)
     accent = st.selectbox(t["accent"], list(ACCENTS), index=list(ACCENTS).index(pick("accent", ACCENTS, "Blue")), key="accent")
     font = st.selectbox(t["font"], list(FONTS), index=list(FONTS).index(pick("font", FONTS, "Inter")), key="font")
@@ -147,7 +149,7 @@ def render_entry(e):
 
 # ---------- Chat ----------
 if not st.session_state.chat:
-    st.markdown(f"<div class='hero'><div class='hello grad'>{t['hello']}</div><div class='sub'>{t['sub']}</div></div>",
+    st.markdown(f"<div class='hero'><div class='badge'>⚖️ Powered by BNS + Gemini</div><div class='hello grad'>{t['hello']}</div><div class='sub'>{t['sub']}</div></div>",
                 unsafe_allow_html=True)
     with st.container(key="chips"):
         for col, ex in zip(st.columns(3), t["ex"]):
