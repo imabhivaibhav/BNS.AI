@@ -49,7 +49,7 @@ def find_matching_sections(query, sections_data, model, section_embeddings, limi
 def run_ai_mode(query, sections_data, model, section_embeddings, history=None):
     retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
     answer = generate_ai_answer(query, retrieved, history)
-    in_scope = not answer.startswith("❌")
+    in_scope = not answer.startswith(("❌", "⚠️"))
     hint = retrieved[0][0].get("Title", "") if (retrieved and in_scope) else ""
     cases = search_cases(query, max_results=5, hint=hint) if in_scope else []
     return {"answer": answer, "sections": retrieved, "cases": cases}
