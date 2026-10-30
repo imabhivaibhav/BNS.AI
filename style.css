@@ -29,7 +29,7 @@ footer, #MainMenu { visibility: hidden; }
   background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-weight: 700; font-size: 1.2rem;
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent); }
 .logo-w.lg { width: 46px; height: 46px; border-radius: 14px; font-size: 1.55rem; }
-.brandname { font-size: 1.3rem; font-weight: 600; letter-spacing: -.01em; }
+.brandname { color: var(--text); font-size: 1.3rem; font-weight: 600; letter-spacing: -.01em; }
 .grad { background: linear-gradient(90deg, var(--accent), var(--accent2), #D96570, var(--accent)); background-size: 200% auto;
   -webkit-background-clip: text; background-clip: text; color: transparent !important; font-weight: 600; animation: shine 7s linear infinite; }
 @keyframes shine { to { background-position: 200% center; } }
@@ -55,17 +55,19 @@ footer, #MainMenu { visibility: hidden; }
 
 /* Mode switch = pill */
 [data-testid="stButtonGroup"] { background: var(--surface2); padding: 4px; border-radius: 999px; display: inline-flex; gap: 2px; border: 1px solid var(--border); }
-[data-testid^="stBaseButton-segmented"] { background: transparent !important; border: none !important; border-radius: 999px !important;
+[data-testid="stButtonGroup"] button { background: transparent !important; border: none !important; border-radius: 999px !important;
   color: var(--text) !important; box-shadow: none !important; }
-[data-testid^="stBaseButton-segmented"] p { color: inherit !important; }
-[data-testid="stBaseButton-segmented_controlActive"] { background: linear-gradient(135deg, var(--accent), var(--accent2)) !important; color: #fff !important; }
+[data-testid="stButtonGroup"] button p { color: inherit !important; }
+[data-testid="stButtonGroup"] button:is([aria-checked="true"], [aria-pressed="true"], [kind$="Active"], [data-testid$="Active"]) {
+  background: linear-gradient(135deg, var(--accent), var(--accent2)) !important; color: #fff !important; }
 
-/* Inputs / dropdowns */
-[data-baseweb="select"] > div, [data-baseweb="input"] { background: var(--surface2) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
-[data-baseweb="select"] *, [data-baseweb="select"] input { color: var(--text) !important; }
-[data-baseweb="popover"] > div, [data-baseweb="menu"], ul[role="listbox"] { background: var(--surface) !important; border: 1px solid var(--border); }
-[role="option"] { color: var(--text) !important; }
-[role="option"]:hover, [role="option"][aria-selected="true"] { background: var(--surface2) !important; }
+/* Dropdowns + popovers: always follow the theme (no white boxes, no invisible text) */
+[data-baseweb="select"] * { background-color: transparent !important; color: var(--text) !important; }
+[data-baseweb="select"] > div { background-color: var(--surface2) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
+[data-baseweb="popover"], [data-baseweb="popover"] :is(div, ul, li) { background-color: var(--surface) !important; color: var(--text) !important; }
+[data-baseweb="popover"] { border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+[data-baseweb="popover"] li:hover, [data-baseweb="popover"] li[aria-selected="true"] { background-color: var(--surface2) !important; }
+[data-baseweb="input"] { background: var(--surface2) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
 [data-testid="stSlider"] [role="slider"] { background: var(--accent) !important; }
 
 /* Messages */
@@ -103,3 +105,8 @@ textarea::placeholder { color: var(--muted) !important; }
 .case .src { display: inline-block; font-size: .72rem; color: var(--muted); background: var(--surface2); padding: .1rem .55rem; border-radius: 999px; margin: .35rem 0; }
 .case .snip { font-size: .9rem; color: var(--text); opacity: .85; line-height: 1.5; }
 .disclaimer { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 1.5rem; }
+
+/* Footer */
+.footer { text-align: center; color: var(--muted); font-size: .82rem; line-height: 1.8; margin-top: .6rem; }
+.footer a { color: var(--link); text-decoration: none; font-weight: 500; }
+.footer a:hover { text-decoration: underline; }
