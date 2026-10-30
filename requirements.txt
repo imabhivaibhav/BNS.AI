@@ -1,5 +1,6 @@
 streamlit>=1.40
 sentence-transformers
 torch
+nltk
 ddgs
-google-genai
+google-generativeai
