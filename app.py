@@ -219,7 +219,8 @@ if prompt and prompt.strip():
             with st.spinner(t["search"]):
                 entry["sections"] = backend.find_matching_sections(query, sections, model, embeds)
         else:
-            history = [(e["query"], e["answer"]) for e in st.session_state.chat if e["mode"] == "Ask AI"]
+            history = [{"q": e["query"], "a": e["answer"], "sections": e["sections"]}
+                       for e in st.session_state.chat if e["mode"] == "Ask AI"]
             with st.spinner(t["think"]):
                 entry.update(backend.run_ai_mode(query, sections, model, embeds, history, LANGS[lang]))
         render_entry(entry)
