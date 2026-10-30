@@ -114,6 +114,15 @@ textarea::placeholder { color: var(--muted) !important; }
 .disclaimer { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 1.5rem; }
 
 /* Footer */
-.footer { text-align: center; color: var(--muted); font-size: .82rem; line-height: 1.8; margin-top: .6rem; }
+.footer { text-align: left; color: var(--muted); font-size: .82rem; line-height: 1.8; margin-top: .6rem; }
 .footer a { color: var(--link); text-decoration: none; font-weight: 500; }
 .footer a:hover { text-decoration: underline; }
+
+/* Popover buttons + bodies (Privacy / Terms / Disclaimer) follow the theme */
+[data-testid="stPopover"] button, [data-testid="stPopoverButton"] { background: var(--surface2) !important;
+  border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: none !important; }
+[data-testid="stPopover"] button, [data-testid="stPopover"] button *, [data-testid="stPopoverButton"] * { color: var(--text) !important; }
+[data-testid="stPopoverBody"] { background: var(--surface) !important; border: 1px solid var(--border) !important;
+  border-radius: 14px !important; box-shadow: var(--shadow); }
+[data-testid="stPopoverBody"] :is(p, li, strong, em, span, h1, h2, h3, h4) { color: var(--text) !important; }
+[data-testid="stPopoverBody"] a { color: var(--link) !important; }
