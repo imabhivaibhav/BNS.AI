@@ -62,7 +62,7 @@ def _generate(prompt: str) -> str:
     raise RuntimeError(str(last))
 
 
-def generate_ai_answer(question, retrieved_sections, history=None):
+def generate_ai_answer(question, retrieved_sections, history=None, language_hint=""):
     if not retrieved_sections:
         return "❌ I cannot answer that as it is outside the provided legal sections."
     context = "\n\n".join(
@@ -72,7 +72,8 @@ def generate_ai_answer(question, retrieved_sections, history=None):
     past = ""
     if history:
         past = "Earlier conversation:\n" + "\n".join(f"User: {q}\nWAL.AI: {a[:300]}" for q, a in history[-2:]) + "\n\n"
+    lang = f"Language instruction (overrides the default): {language_hint}\n\n" if language_hint else ""
     try:
-        return _generate(f"{past}CONTEXT:\n{context}\n\nUSER QUESTION: {question}")
+        return _generate(f"{lang}{past}CONTEXT:\n{context}\n\nUSER QUESTION: {question}")
     except Exception as e:
         return f"⚠️ Gemini AI generation error: {e}"
