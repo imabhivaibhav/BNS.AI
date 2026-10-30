@@ -1,12 +1,65 @@
 # app.py  ->  streamlit run app.py
+import os
 import streamlit as st
 
 import backend
 
-st.set_page_config(page_title="WAL.AI", page_icon="✨", layout="centered")
+ICON = "favicon.png" if os.path.exists("favicon.png") else "⚖️"
+st.set_page_config(page_title="WAL.AI", page_icon=ICON, layout="centered", initial_sidebar_state="auto")
 
-with open("style.css", encoding="utf-8") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+# ---------- Settings data ----------
+THEMES = ["System", "Light", "Dark"]
+ACCENTS = {"Blue": ("#4285F4", "#9B72CB"), "Green": ("#1E8E3E", "#34A853"), "Purple": ("#8B5CF6", "#C084FC"),
+           "Orange": ("#F28B30", "#F5B14C"), "Rose": ("#E5484D", "#F08FA0")}
+FONTS = {"Inter": "Inter", "Poppins": "Poppins", "Roboto": "Roboto",
+         "Merriweather (serif)": "Merriweather", "Fira Code (mono)": "Fira Code"}
+SIZES = {"Small": 14, "Medium": 16, "Large": 18}
+LANGS = {"Auto": "", "English": "Reply in English.", "हिन्दी": "Reply in Hindi using Devanagari script.",
+         "Hinglish": "Reply in Hinglish: Hindi written in Roman script."}
+LIGHT = dict(bg="#FFFFFF", surface="#F0F4F9", surface2="#E3E9F2", text="#1F1F1F", muted="#747775", link="#1A0DAB")
+DARK = dict(bg="#131314", surface="#1E1F20", surface2="#2A2B2D", text="#E3E3E3", muted="#9AA0A6", link="#8AB4F8")
+
+T = {
+    "en": dict(hello="Hello there", sub="How can I help with the law today?", ask="Ask AI", find="Find Sections",
+               new="New chat", inp="Ask WAL.AI about a case or a BNS section", settings="Settings", theme="Theme",
+               accent="Accent colour", font="Font style", size="Text size", lang="Primary language",
+               think="Thinking...", search="Searching sections...", matching="Matching sections",
+               refs="Sections referenced", cases="Related court cases",
+               nomatch="No matching sections found. Try describing the case in different words.",
+               disc="WAL.AI gives general information, not legal advice. Consult a lawyer for important matters.",
+               saved="Settings are saved in the page URL.",
+               ex=["Someone stole my phone on the bus", "What is BNS section 103?", "Threatening someone over a phone call"]),
+    "hi": dict(hello="नमस्ते", sub="आज मैं कानून से जुड़ी क्या मदद कर सकता हूँ?", ask="AI से पूछें", find="धाराएँ खोजें",
+               new="नई चैट", inp="अपना केस या BNS धारा पूछें", settings="सेटिंग्स", theme="थीम",
+               accent="रंग", font="फ़ॉन्ट", size="टेक्स्ट साइज़", lang="प्रमुख भाषा",
+               think="सोच रहा हूँ...", search="धाराएँ खोज रहा हूँ...", matching="मिलती-जुलती धाराएँ",
+               refs="संदर्भित धाराएँ", cases="संबंधित अदालती मामले",
+               nomatch="कोई धारा नहीं मिली। केस को दूसरे शब्दों में लिखकर देखें।",
+               disc="WAL.AI सामान्य जानकारी देता है, कानूनी सलाह नहीं। ज़रूरी मामलों में वकील से मिलें।",
+               saved="सेटिंग्स पेज के URL में सेव होती हैं।",
+               ex=["किसी ने बस में मेरा फोन चुरा लिया", "BNS धारा 103 क्या है?", "फोन पर धमकी देना"]),
+}
+
+
+def pick(key, options, default):
+    v = st.query_params.get(key, default)
+    return v if v in options else default
+
+
+def theme_css(theme, accent, font, px):
+    a1, a2 = ACCENTS[accent]
+    fam = FONTS[font]
+    vb = lambda d: "".join(f"--{k}:{v};" for k, v in d.items())
+    base = f"--accent:{a1};--accent2:{a2};--font:'{fam}';--fs:{px}px;"
+    if theme == "Dark":
+        root = f":root{{{base}{vb(DARK)}color-scheme:dark}}"
+    elif theme == "Light":
+        root = f":root{{{base}{vb(LIGHT)}color-scheme:light}}"
+    else:
+        root = f":root{{{base}{vb(LIGHT)}}}@media (prefers-color-scheme: dark){{:root{{{vb(DARK)}color-scheme:dark}}}}"
+    imp = (f"@import url('https://fonts.googleapis.com/css2?family={fam.replace(' ', '+')}:wght@400;500;600"
+           "&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap');")
+    return imp + root
 
 
 @st.cache_data
@@ -27,19 +80,34 @@ def get_embeddings():
 sections, model, embeds = get_sections(), get_model(), get_embeddings()
 st.session_state.setdefault("chat", [])
 
-# ---------- Top bar ----------
-brand, newchat = st.columns([5, 1])
-with brand:
-    st.markdown("<div class='brand grad'>✨ WAL.AI</div>", unsafe_allow_html=True)
-with newchat:
-    st.markdown("<div class='newchat'>", unsafe_allow_html=True)
-    if st.button("New chat", use_container_width=True):
+t = T["hi" if st.session_state.get("lang", pick("lang", LANGS, "Auto")) == "हिन्दी" else "en"]
+
+# ---------- Sidebar (collapsible with the arrow at its top) ----------
+with st.sidebar:
+    st.markdown("<div class='brandrow'><div class='logo-w lg'>W</div><span class='brandname'>WAL.AI</span></div>",
+                unsafe_allow_html=True)
+    if st.button(t["new"], use_container_width=True, icon=":material/add:"):
         st.session_state.chat = []
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.divider()
+    st.markdown(f"**{t['settings']}**")
+    theme = st.radio(t["theme"], THEMES, index=THEMES.index(pick("theme", THEMES, "System")), key="theme", horizontal=True)
+    accent = st.selectbox(t["accent"], list(ACCENTS), index=list(ACCENTS).index(pick("accent", ACCENTS, "Blue")), key="accent")
+    font = st.selectbox(t["font"], list(FONTS), index=list(FONTS).index(pick("font", FONTS, "Inter")), key="font")
+    size = st.select_slider(t["size"], list(SIZES), value=pick("size", SIZES, "Medium"), key="size")
+    lang = st.selectbox(t["lang"], list(LANGS), index=list(LANGS).index(pick("lang", LANGS, "Auto")), key="lang")
+    st.caption(t["saved"])
+st.query_params.update(theme=theme, accent=accent, font=font, size=size, lang=lang)
 
-mode = st.segmented_control("Mode", ["Ask AI", "Find Sections"], default="Ask AI",
-                            label_visibility="collapsed") or "Ask AI"
+with open("style.css", encoding="utf-8") as f:
+    st.markdown(f"<style>{theme_css(theme, accent, font, SIZES[size])}</style><style>{f.read()}</style>",
+                unsafe_allow_html=True)
+
+# ---------- Top bar ----------
+st.markdown("<div class='brandrow'><div class='logo-w'>W</div><span class='brandname grad'>WAL.AI</span></div>",
+            unsafe_allow_html=True)
+mode = st.segmented_control("Mode", ["Ask AI", "Find Sections"], default="Ask AI", label_visibility="collapsed",
+                            format_func=lambda k: t["ask"] if k == "Ask AI" else t["find"]) or "Ask AI"
 
 
 # ---------- Renderers ----------
@@ -55,60 +123,58 @@ def render_sections(items, show_punishment=True):
 def render_cases(cases):
     for c in cases:
         snip = (c["snippet"][:220] + "...") if len(c["snippet"]) > 220 else c["snippet"]
-        st.markdown(
-            f"<div class='case'><a href='{c['link']}' target='_blank'>{c['title']}</a>"
-            f"<div class='src'>{c['source']}</div><div class='snip'>{snip}</div></div>",
-            unsafe_allow_html=True)
+        st.markdown(f"<div class='case'><a href='{c['link']}' target='_blank'>{c['title']}</a>"
+                    f"<div class='src'>{c['source']}</div><div class='snip'>{snip}</div></div>", unsafe_allow_html=True)
 
 
 def render_entry(e):
     if e["mode"] == "Find Sections":
         if e["sections"]:
-            st.markdown("<div class='sec-head'>Matching sections</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='sec-head'>{t['matching']}</div>", unsafe_allow_html=True)
             render_sections(e["sections"])
         else:
-            st.warning("No matching sections found. Try describing the case in different words.")
+            st.warning(t["nomatch"])
         return
     st.markdown(e["answer"])
     if e["sections"] and not e["answer"].startswith(("❌", "⚠️")):
-        st.markdown("<div class='sec-head'>Sections referenced</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='sec-head'>{t['refs']}</div>", unsafe_allow_html=True)
         render_sections(e["sections"], show_punishment=False)
     if e["cases"]:
-        st.markdown("<div class='sec-head'>Related court cases</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='sec-head'>{t['cases']}</div>", unsafe_allow_html=True)
         render_cases(e["cases"])
 
 
-# ---------- Empty state / history ----------
+# ---------- Chat ----------
 if not st.session_state.chat:
-    st.markdown("<div class='hero'><div class='hello grad'>Hello there</div>"
-                "<div class='sub'>How can I help with the law today?</div></div>", unsafe_allow_html=True)
-    examples = ["Someone stole my phone on the bus", "What is BNS section 103?", "Threatening someone over a phone call"]
-    for col, ex in zip(st.columns(len(examples)), examples):
-        col.button(ex, key=ex, use_container_width=True, on_click=lambda t=ex: st.session_state.update(pending=t))
+    st.markdown(f"<div class='hero'><div class='hello grad'>{t['hello']}</div><div class='sub'>{t['sub']}</div></div>",
+                unsafe_allow_html=True)
+    with st.container(key="chips"):
+        for col, ex in zip(st.columns(3), t["ex"]):
+            col.button(ex, key=f"chip_{ex}", use_container_width=True,
+                       on_click=lambda q=ex: st.session_state.update(pending=q))
 
 for e in st.session_state.chat:
     with st.chat_message("user"):
         st.write(e["query"])
-    with st.chat_message("assistant", avatar="✨"):
+    with st.chat_message("assistant", avatar=ICON):
         render_entry(e)
 
-prompt = st.chat_input("Ask WAL.AI about a case or a BNS section") or st.session_state.pop("pending", None)
+prompt = st.chat_input(t["inp"]) or st.session_state.pop("pending", None)
 
 if prompt and prompt.strip():
     query = prompt.strip()
     with st.chat_message("user"):
         st.write(query)
-    with st.chat_message("assistant", avatar="✨"):
+    with st.chat_message("assistant", avatar=ICON):
         entry = {"query": query, "mode": mode}
         if mode == "Find Sections":
-            with st.spinner("Searching sections..."):
+            with st.spinner(t["search"]):
                 entry["sections"] = backend.find_matching_sections(query, sections, model, embeds)
         else:
             history = [(e["query"], e["answer"]) for e in st.session_state.chat if e["mode"] == "Ask AI"]
-            with st.spinner("Thinking..."):
-                entry.update(backend.run_ai_mode(query, sections, model, embeds, history))
+            with st.spinner(t["think"]):
+                entry.update(backend.run_ai_mode(query, sections, model, embeds, history, LANGS[lang]))
         render_entry(entry)
     st.session_state.chat.append(entry)
 
-st.markdown("<div class='disclaimer'>WAL.AI gives general information, not legal advice. "
-            "Consult a lawyer for important matters.</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='disclaimer'>{t['disc']}</div>", unsafe_allow_html=True)
