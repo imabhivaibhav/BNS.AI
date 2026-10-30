@@ -25,12 +25,12 @@ DARK = dict(bg="#15171C", surface="#222630", surface2="#2F3441", text="#EEF1F6",
 
 T = {
     "en": dict(hello="Hello there", sub="How can I help with the law today?", ask="Ask AI", find="Find Sections",
-               new="New chat", inp="Ask WAL.AI about a case or a BNS section", settings="Settings", theme="Theme",
+               new="New chat", inp="Ask WAL about a case or a BNS section", settings="Settings", theme="Theme",
                accent="Accent colour", font="Font style", size="Text size", lang="Primary language",
                think="Thinking...", search="Searching sections...", matching="Matching sections",
                refs="Sections referenced", cases="Related court cases",
                nomatch="No matching sections found. Try describing the case in different words.",
-               disc="WAL.AI gives general information, not legal advice. Consult a lawyer for important matters.",
+               disc="WAL gives general information, not legal advice. Consult a lawyer for important matters.",
                saved="Settings are saved in the page URL.",
                ex=["📱 Someone stole my phone on the bus", "📖 What is BNS section 103?", "📞 Threatening someone over a phone call"]),
     "hi": dict(hello="नमस्ते", sub="आज मैं कानून से जुड़ी क्या मदद कर सकता हूँ?", ask="AI से पूछें", find="धाराएँ खोजें",
@@ -39,7 +39,7 @@ T = {
                think="सोच रहा हूँ...", search="धाराएँ खोज रहा हूँ...", matching="मिलती-जुलती धाराएँ",
                refs="संदर्भित धाराएँ", cases="संबंधित अदालती मामले",
                nomatch="कोई धारा नहीं मिली। केस को दूसरे शब्दों में लिखकर देखें।",
-               disc="WAL.AI सामान्य जानकारी देता है, कानूनी सलाह नहीं। ज़रूरी मामलों में वकील से मिलें।",
+               disc="WAL सामान्य जानकारी देता है, कानूनी सलाह नहीं। ज़रूरी मामलों में वकील से मिलें।",
                saved="सेटिंग्स पेज के URL में सेव होती हैं।",
                ex=["📱 किसी ने बस में मेरा फोन चुरा लिया", "📖 BNS धारा 103 क्या है?", "📞 फोन पर धमकी देना"]),
 }
@@ -86,6 +86,33 @@ st.session_state.setdefault("chat", [])
 
 t = T["hi" if st.session_state.get("lang", pick("lang", LANGS, "Auto")) == "हिन्दी" else "en"]
 
+# ---------- Footer content (shown at the bottom of the sidebar) ----------
+PRIVACY = ("**Privacy**\n\nWAL itself does not save your chats to a database; they stay in your browser session. "
+           "To answer, your question is sent to Google Gemini and to a web search service. "
+           "Please avoid entering personal or sensitive details.\n\nQuestions: wal@belicit.com")
+TERMS = ("**Terms of Use**\n\nWAL is provided \"as is\" for general information only. Answers may be incomplete or "
+         "out of date. Belicit is not liable for decisions made based on its output.")
+LEGAL = ("**Disclaimer**\n\nWAL is not a law firm and does not provide legal advice. For any real legal matter, "
+         "please consult a qualified lawyer.")
+
+
+def clock_html(theme):
+    pal = lambda d: f"--t:{d['text']};--m:{d['muted']}"
+    if theme == "Dark":
+        css = f":root{{{pal(DARK)}}}"
+    elif theme == "Light":
+        css = f":root{{{pal(LIGHT)}}}"
+    else:
+        css = f":root{{{pal(LIGHT)}}}@media(prefers-color-scheme:dark){{:root{{{pal(DARK)}}}}}"
+    return (f"<style>{css} body{{margin:0;font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;color:var(--m)}}"
+            "b{color:var(--t);font-weight:600}</style>"
+            "<div>🕒 <b id='t'></b></div><div><span id='d'></span> &nbsp;·&nbsp; 📍 <b>India</b></div>"
+            "<script>const z={timeZone:'Asia/Kolkata'};const f=()=>{const n=new Date();"
+            "document.getElementById('t').textContent=n.toLocaleTimeString('en-IN',{...z,hour:'2-digit',minute:'2-digit',second:'2-digit'})+' IST';"
+            "document.getElementById('d').textContent=n.toLocaleDateString('en-IN',{...z,weekday:'short',day:'2-digit',month:'short',year:'numeric'})};"
+            "f();setInterval(f,1000)</script>")
+
+
 # ---------- Sidebar (collapsible with the arrow at its top) ----------
 with st.sidebar:
     st.markdown("<div class='brandrow'><div class='logo-w lg'>W</div><span class='brandname'>WAL.AI</span></div>",
@@ -102,6 +129,18 @@ with st.sidebar:
     size = st.select_slider(t["size"], list(SIZES), value=pick("size", SIZES, "Medium"), key="size")
     lang = st.selectbox(t["lang"], list(LANGS), index=list(LANGS).index(pick("lang", LANGS, "Auto")), key="lang")
     st.caption(t["saved"])
+    st.divider()
+    components.html(clock_html(theme), height=56)
+    with st.popover("Privacy", use_container_width=True):
+        st.markdown(PRIVACY)
+    with st.popover("Terms", use_container_width=True):
+        st.markdown(TERMS)
+    with st.popover("Disclaimer", use_container_width=True):
+        st.markdown(LEGAL)
+    st.markdown(f"""<div class='footer'>
+<div>Support: <a href='mailto:wal@belicit.com'>wal@belicit.com</a></div>
+<div>© {datetime.now().year} Belicit. All rights reserved.</div>
+<div>{t['disc']}</div></div>""", unsafe_allow_html=True)
 st.query_params.update(theme=theme, accent=accent, font=font, size=size, lang=lang)
 
 with open("style.css", encoding="utf-8") as f:
@@ -182,44 +221,3 @@ if prompt and prompt.strip():
                 entry.update(backend.run_ai_mode(query, sections, model, embeds, history, LANGS[lang]))
         render_entry(entry)
     st.session_state.chat.append(entry)
-
-
-# ---------- Footer ----------
-PRIVACY = ("**Privacy**\n\nWAL.AI itself does not save your chats to a database; they stay in your browser session. "
-           "To answer, your question is sent to Google Gemini and to a web search service. "
-           "Please avoid entering personal or sensitive details.\n\nQuestions: wal@belicit.com")
-TERMS = ("**Terms of Use**\n\nWAL.AI is provided \"as is\" for general information only. Answers may be incomplete or "
-         "out of date. Belicit is not liable for decisions made based on its output.")
-LEGAL = ("**Disclaimer**\n\nWAL.AI is not a law firm and does not provide legal advice. For any real legal matter, "
-         "please consult a qualified lawyer.")
-
-
-def clock_html(theme):
-    pal = lambda d: f"--t:{d['text']};--m:{d['muted']}"
-    if theme == "Dark":
-        css = f":root{{{pal(DARK)}}}"
-    elif theme == "Light":
-        css = f":root{{{pal(LIGHT)}}}"
-    else:
-        css = f":root{{{pal(LIGHT)}}}@media(prefers-color-scheme:dark){{:root{{{pal(DARK)}}}}}"
-    return (f"<style>{css} body{{margin:0;font-family:system-ui,sans-serif;text-align:center;font-size:14px;color:var(--m)}}"
-            "b{color:var(--t);font-weight:600}</style>"
-            "<div>🕒 <b id='c'></b> &nbsp;·&nbsp; 📍 <b>India</b></div>"
-            "<script>const f=()=>{document.getElementById('c').textContent=new Date().toLocaleString('en-IN',"
-            "{timeZone:'Asia/Kolkata',weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',"
-            "minute:'2-digit',second:'2-digit'})+' IST'};f();setInterval(f,1000)</script>")
-
-
-st.divider()
-components.html(clock_html(theme), height=34)
-p1, p2, p3 = st.columns(3)
-with p1.popover("Privacy", use_container_width=True):
-    st.markdown(PRIVACY)
-with p2.popover("Terms", use_container_width=True):
-    st.markdown(TERMS)
-with p3.popover("Disclaimer", use_container_width=True):
-    st.markdown(LEGAL)
-st.markdown(f"""<div class='footer'>
-<div>Support: <a href='mailto:wal@belicit.com'>wal@belicit.com</a></div>
-<div>© {datetime.now().year} Belicit. All rights reserved.</div>
-<div>{t['disc']}</div></div>""", unsafe_allow_html=True)
