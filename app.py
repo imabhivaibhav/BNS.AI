@@ -90,6 +90,7 @@ t = T["hi" if st.session_state.get("lang", pick("lang", LANGS, "Auto")) == "เคนเ
 with st.sidebar:
     st.markdown("<div class='brandrow'><div class='logo-w lg'>W</div><span class='brandname'>WAL.AI</span></div>",
                 unsafe_allow_html=True)
+    st.markdown("<div style='height:1.1rem'></div>", unsafe_allow_html=True)
     if st.button(t["new"], use_container_width=True, icon=":material/add:"):
         st.session_state.chat = []
         st.rerun()
