@@ -1,6 +1,8 @@
 # app.py  ->  streamlit run app.py
 import os
 import streamlit as st
+import streamlit.components.v1 as components
+from datetime import datetime
 
 import backend
 
@@ -149,7 +151,7 @@ def render_entry(e):
 
 # ---------- Chat ----------
 if not st.session_state.chat:
-    st.markdown(f"<div class='hero'><div class='badge'>⚖️ Powered by BNS + Gemini</div><div class='hello grad'>{t['hello']}</div><div class='sub'>{t['sub']}</div></div>",
+    st.markdown(f"<div class='hero'><div class='badge'>Powered by Belicit</div><div class='hello grad'>{t['hello']}</div><div class='sub'>{t['sub']}</div></div>",
                 unsafe_allow_html=True)
     with st.container(key="chips"):
         for col, ex in zip(st.columns(3), t["ex"]):
@@ -180,4 +182,43 @@ if prompt and prompt.strip():
         render_entry(entry)
     st.session_state.chat.append(entry)
 
-st.markdown(f"<div class='disclaimer'>{t['disc']}</div>", unsafe_allow_html=True)
+
+# ---------- Footer ----------
+PRIVACY = ("**Privacy**\n\nWAL.AI itself does not save your chats to a database; they stay in your browser session. "
+           "To answer, your question is sent to Google Gemini and to a web search service. "
+           "Please avoid entering personal or sensitive details.\n\nQuestions: wal@belicit.com")
+TERMS = ("**Terms of Use**\n\nWAL.AI is provided \"as is\" for general information only. Answers may be incomplete or "
+         "out of date. Belicit is not liable for decisions made based on its output.")
+LEGAL = ("**Disclaimer**\n\nWAL.AI is not a law firm and does not provide legal advice. For any real legal matter, "
+         "please consult a qualified lawyer.")
+
+
+def clock_html(theme):
+    pal = lambda d: f"--t:{d['text']};--m:{d['muted']}"
+    if theme == "Dark":
+        css = f":root{{{pal(DARK)}}}"
+    elif theme == "Light":
+        css = f":root{{{pal(LIGHT)}}}"
+    else:
+        css = f":root{{{pal(LIGHT)}}}@media(prefers-color-scheme:dark){{:root{{{pal(DARK)}}}}}"
+    return (f"<style>{css} body{{margin:0;font-family:system-ui,sans-serif;text-align:center;font-size:14px;color:var(--m)}}"
+            "b{color:var(--t);font-weight:600}</style>"
+            "<div>🕒 <b id='c'></b> &nbsp;·&nbsp; 📍 <b>India</b></div>"
+            "<script>const f=()=>{document.getElementById('c').textContent=new Date().toLocaleString('en-IN',"
+            "{timeZone:'Asia/Kolkata',weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',"
+            "minute:'2-digit',second:'2-digit'})+' IST'};f();setInterval(f,1000)</script>")
+
+
+st.divider()
+components.html(clock_html(theme), height=34)
+p1, p2, p3 = st.columns(3)
+with p1.popover("Privacy", use_container_width=True):
+    st.markdown(PRIVACY)
+with p2.popover("Terms", use_container_width=True):
+    st.markdown(TERMS)
+with p3.popover("Disclaimer", use_container_width=True):
+    st.markdown(LEGAL)
+st.markdown(f"""<div class='footer'>
+<div>Support: <a href='mailto:wal@belicit.com'>wal@belicit.com</a></div>
+<div>© {datetime.now().year} Belicit. All rights reserved.</div>
+<div>{t['disc']}</div></div>""", unsafe_allow_html=True)
