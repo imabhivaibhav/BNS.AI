@@ -12,8 +12,13 @@ footer, #MainMenu { visibility: hidden; }
 ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
 
 [data-testid="stSidebar"] { background: var(--surface); border-right: 1px solid var(--border); }
-[data-testid="stSidebarCollapseButton"] button, [data-testid="stExpandSidebarButton"],
-[data-testid="stExpandSidebarButton"] button { color: var(--text); }
+/* Sidebar collapse/expand arrow + top-right toolbar: visible in every theme */
+[data-testid="stSidebarCollapseButton"], [data-testid="stSidebarCollapseButton"] *,
+[data-testid="stExpandSidebarButton"], [data-testid="stExpandSidebarButton"] *,
+[data-testid="stToolbar"] *, [data-testid="stHeader"] button { color: var(--text) !important; }
+[data-testid="stSidebarCollapseButton"] button, [data-testid="stExpandSidebarButton"] {
+  background: var(--surface2) !important; border: 1px solid var(--border) !important; border-radius: 10px !important; }
+[data-testid="stExpandSidebarButton"] button { background: transparent !important; border: none !important; }
 .side-label { font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: .2rem 0 .5rem; }
 
 /* Text colours (kept explicit so nothing turns dark-on-dark) */
@@ -47,9 +52,11 @@ footer, #MainMenu { visibility: hidden; }
   transition: transform .15s, border-color .15s, background .15s; }
 .stButton > button p, [data-testid^="stBaseButton-secondary"] p, .stButton > button span { color: var(--text) !important; }
 .stButton > button:hover { border-color: var(--accent); background: var(--surface2); transform: translateY(-1px); color: var(--text); }
-[data-testid="stSidebar"] .stButton > button { background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none; border-radius: 999px; min-height: 0; padding: .55rem 1rem; }
-[data-testid="stSidebar"] .stButton > button p, [data-testid="stSidebar"] .stButton > button span { color: #fff !important; }
+/* New chat: outlined (not filled) so it doesn't merge with the logo */
+[data-testid="stSidebar"] .stButton > button { background: transparent; border: 1.5px solid var(--accent);
+  border-radius: 999px; min-height: 0; padding: .5rem 1rem; box-shadow: none; }
+[data-testid="stSidebar"] .stButton > button:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); transform: none; }
+[data-testid="stSidebar"] .stButton > button p, [data-testid="stSidebar"] .stButton > button span { color: var(--accent) !important; font-weight: 600; }
 .st-key-chips .stButton > button { min-height: 5.6rem; padding: 1rem; line-height: 1.4; border-radius: 18px; }
 .st-key-chips .stButton > button > div { justify-content: flex-start; text-align: left; }
 
