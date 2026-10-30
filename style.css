@@ -1,35 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Public+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-/* Font applies to text only - never to icon elements */
 html, body, .stApp, .stMarkdown, .stMarkdown p, label, button, textarea, input {
-  font-family: 'Public Sans', system-ui, sans-serif;
+  font-family: 'Inter', 'Google Sans', system-ui, sans-serif;
 }
-[data-testid="stIconMaterial"], .material-symbols-rounded {
-  font-family: 'Material Symbols Rounded' !important;
-}
+[data-testid="stIconMaterial"], .material-symbols-rounded { font-family: 'Material Symbols Rounded' !important; }
 
-.block-container { max-width: 780px; padding-top: 1rem; padding-bottom: 7rem; }
+.block-container { max-width: 760px; padding-top: 1rem; padding-bottom: 8rem; }
 header[data-testid="stHeader"] { background: transparent; }
+footer, #MainMenu { visibility: hidden; }
 
-.masthead { padding: 1.2rem 0 1rem; border-bottom: 1px solid #D5DAE1; margin-bottom: 1rem; }
-.masthead h1 { font-family: 'Newsreader', Georgia, serif; font-size: 2.4rem; font-weight: 700;
-  color: #1F3A5F; margin: 0; line-height: 1.1; }
-.masthead p { margin: .4rem 0 0; color: #566172; max-width: 58ch; line-height: 1.5; }
+/* Gemini-style gradient text */
+.grad { background: linear-gradient(90deg, #4285F4, #9B72CB 45%, #D96570); -webkit-background-clip: text;
+  background-clip: text; color: transparent; font-weight: 600; }
+.brand { font-size: 1.35rem; margin: .2rem 0 .8rem; }
+.hero { margin: 3.5rem 0 1.6rem; }
+.hello { font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1.15; letter-spacing: -0.02em; }
+.sub { font-size: clamp(1.5rem, 5vw, 2.4rem); color: #C4C7C5; font-weight: 500; line-height: 1.2; margin-top: .2rem; }
 
-.sec-head { font-family: 'Newsreader', Georgia, serif; font-size: 1.1rem; font-weight: 700;
-  color: #1F3A5F; margin: .6rem 0 .3rem; }
-.punish { border-left: 3px solid #B8860B; background: #FBF6E9; padding: .5rem .8rem;
-  border-radius: 0 6px 6px 0; font-size: .93rem; margin-top: .5rem; }
+/* Suggestion chips + buttons */
+.stButton > button { background: #F0F4F9; color: #1F1F1F; border: none; border-radius: 16px;
+  padding: 1rem; min-height: 5.2rem; text-align: left; line-height: 1.35; transition: background .15s; }
+.stButton > button:hover { background: #E3E9F2; color: #1F1F1F; }
+.newchat .stButton > button { min-height: 0; padding: .45rem 1rem; border-radius: 999px; }
 
-.case { border: 1px solid #DDE2E9; background: #fff; border-radius: 8px; padding: .7rem .9rem; margin-bottom: .55rem; }
-.case a { font-weight: 600; color: #1F3A5F; text-decoration: none; }
+/* Messages: user = grey bubble on the right, assistant = plain text */
+[data-testid="stChatMessage"] { background: transparent; border: none; padding: .5rem 0; gap: .9rem; }
+[data-testid="stChatMessageAvatarUser"] { display: none; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { flex-direction: row-reverse; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stChatMessageContent"] {
+  background: #F0F4F9; border-radius: 22px; padding: .75rem 1.15rem; flex: 0 1 auto; max-width: 85%; }
+[data-testid="stChatMessageAvatarAssistant"] { background: transparent; }
+
+/* Pill input */
+[data-testid="stChatInput"] > div { background: #F0F4F9; border: 1px solid transparent; border-radius: 32px; }
+[data-testid="stChatInput"] textarea { background: transparent; }
+[data-testid="stBottom"] > div { background: #fff; }
+
+/* Cards */
+[data-testid="stExpander"] details { background: #F0F4F9; border: none; border-radius: 16px; }
+.sec-head { font-size: 1rem; font-weight: 600; margin: 1rem 0 .4rem; color: #444746; }
+.punish { background: #fff; border-radius: 12px; padding: .6rem .9rem; font-size: .92rem; margin-top: .5rem; }
+.case { background: #F0F4F9; border-radius: 16px; padding: .85rem 1rem; margin-bottom: .6rem; }
+.case a { font-weight: 600; color: #1A0DAB; text-decoration: none; }
 .case a:hover { text-decoration: underline; }
-.case .src { font-size: .78rem; color: #8A94A3; margin: .15rem 0 .3rem; }
-.case .snip { font-size: .9rem; color: #3B4655; line-height: 1.45; }
-
-.disclaimer { font-size: .78rem; color: #8A94A3; text-align: center; margin-top: 1.2rem; }
-
-[data-testid="stChatMessage"] { background: transparent; border: none; padding: .4rem 0; }
-.stButton > button { border-radius: 8px; border: 1px solid #1F3A5F; color: #1F3A5F; background: #fff; }
-.stButton > button:hover { background: #1F3A5F; color: #fff; border-color: #1F3A5F; }
-@media (max-width: 640px) { .masthead h1 { font-size: 2rem; } }
+.case .src { font-size: .78rem; color: #747775; margin: .15rem 0 .3rem; }
+.case .snip { font-size: .9rem; color: #444746; line-height: 1.45; }
+.disclaimer { font-size: .75rem; color: #747775; text-align: center; margin-top: 1.5rem; }
