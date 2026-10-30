@@ -126,3 +126,11 @@ textarea::placeholder { color: var(--muted) !important; }
   border-radius: 14px !important; box-shadow: var(--shadow); }
 [data-testid="stPopoverBody"] :is(p, li, strong, em, span, h1, h2, h3, h4) { color: var(--text) !important; }
 [data-testid="stPopoverBody"] a { color: var(--link) !important; }
+
+/* Sidebar chip groups (accent / font / language) - replace the white native dropdowns */
+[data-testid="stSidebar"] [data-testid="stButtonGroup"] { display: flex; flex-wrap: wrap; gap: 6px; padding: 0;
+  background: transparent; border: none; border-radius: 0; }
+[data-testid="stSidebar"] [data-testid="stButtonGroup"] button { background: var(--surface2) !important; color: var(--text) !important;
+  border: 1px solid var(--border) !important; padding: .3rem .85rem; min-height: 0; }
+[data-testid="stSidebar"] [data-testid="stButtonGroup"] button:is([aria-checked="true"], [aria-pressed="true"], [kind$="Active"], [data-testid$="Active"]) {
+  background: linear-gradient(135deg, var(--accent), var(--accent2)) !important; color: #fff !important; border-color: transparent !important; }
