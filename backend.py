@@ -46,9 +46,9 @@ def find_matching_sections(query, sections_data, model, section_embeddings, limi
     return [(sections_data[i], sc) for i, sc in ranked]
 
 
-def run_ai_mode(query, sections_data, model, section_embeddings, history=None):
+def run_ai_mode(query, sections_data, model, section_embeddings, history=None, language_hint=""):
     retrieved = retrieve_top_sections(query, sections_data, model, section_embeddings, top_k=4)
-    answer = generate_ai_answer(query, retrieved, history)
+    answer = generate_ai_answer(query, retrieved, history, language_hint)
     in_scope = not answer.startswith(("❌", "⚠️"))
     hint = retrieved[0][0].get("Title", "") if (retrieved and in_scope) else ""
     cases = search_cases(query, max_results=5, hint=hint) if in_scope else []
