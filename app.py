@@ -100,7 +100,8 @@ with st.sidebar:
 st.query_params.update(theme=theme, accent=accent, font=font, size=size, lang=lang)
 
 with open("style.css", encoding="utf-8") as f:
-    st.markdown(f"<style>{theme_css(theme, accent, font, SIZES[size])}</style><style>{f.read()}</style>",
+    # ONE <style> block only: a second tag on the same line makes markdown print the CSS as text
+    st.markdown(f"<style>{theme_css(theme, accent, font, SIZES[size])}\n{f.read()}</style>",
                 unsafe_allow_html=True)
 
 # ---------- Top bar ----------
