@@ -15,6 +15,7 @@ ACCENTS = {"Blue": ("#4285F4", "#9B72CB"), "Green": ("#1E8E3E", "#34A853"), "Pur
            "Orange": ("#F28B30", "#F5B14C"), "Rose": ("#E5484D", "#F08FA0")}
 FONTS = {"Inter": "Inter", "Poppins": "Poppins", "Roboto": "Roboto",
          "Merriweather (serif)": "Merriweather", "Fira Code (mono)": "Fira Code"}
+DOT = {"Blue": "🔵", "Green": "🟢", "Purple": "🟣", "Orange": "🟠", "Rose": "🔴"}
 SIZES = {"Small": 14, "Medium": 16, "Large": 18}
 LANGS = {"Auto": "", "English": "Reply in English.", "हिन्दी": "Reply in Hindi using Devanagari script.",
          "Hinglish": "Reply in Hinglish: Hindi written in Roman script."}
@@ -84,7 +85,7 @@ def get_embeddings():
 sections, model, embeds = get_sections(), get_model(), get_embeddings()
 st.session_state.setdefault("chat", [])
 
-t = T["hi" if st.session_state.get("lang", pick("lang", LANGS, "Auto")) == "हिन्दी" else "en"]
+t = T["hi" if (st.session_state.get("lang") or pick("lang", LANGS, "Auto")) == "हिन्दी" else "en"]
 
 # ---------- Footer content (shown at the bottom of the sidebar) ----------
 PRIVACY = ("**Privacy**\n\nWAL itself does not save your chats to a database; they stay in your browser session. "
@@ -124,10 +125,12 @@ with st.sidebar:
     st.divider()
     st.markdown(f"<div class='side-label'>{t['settings']}</div>", unsafe_allow_html=True)
     theme = st.radio(t["theme"], THEMES, index=THEMES.index(pick("theme", THEMES, "System")), key="theme", horizontal=True)
-    accent = st.selectbox(t["accent"], list(ACCENTS), index=list(ACCENTS).index(pick("accent", ACCENTS, "Blue")), key="accent")
-    font = st.selectbox(t["font"], list(FONTS), index=list(FONTS).index(pick("font", FONTS, "Inter")), key="font")
+    accent = st.pills(t["accent"], list(ACCENTS), default=pick("accent", ACCENTS, "Blue"), key="accent",
+                      format_func=lambda k: f"{DOT[k]} {k}") or pick("accent", ACCENTS, "Blue")
+    font = st.pills(t["font"], list(FONTS), default=pick("font", FONTS, "Inter"), key="font",
+                    format_func=lambda k: k.split(" (")[0]) or pick("font", FONTS, "Inter")
     size = st.select_slider(t["size"], list(SIZES), value=pick("size", SIZES, "Medium"), key="size")
-    lang = st.selectbox(t["lang"], list(LANGS), index=list(LANGS).index(pick("lang", LANGS, "Auto")), key="lang")
+    lang = st.pills(t["lang"], list(LANGS), default=pick("lang", LANGS, "Auto"), key="lang") or pick("lang", LANGS, "Auto")
     st.caption(t["saved"])
     st.divider()
     components.html(clock_html(theme), height=56)
