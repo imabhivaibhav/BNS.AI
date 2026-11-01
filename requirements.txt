@@ -1,7 +1,6 @@
 streamlit
---extra-index-url https://pytorch.org
-torch --no-cache-dir
 sentence-transformers
+torch
 nltk
 ddgs
 gdown
