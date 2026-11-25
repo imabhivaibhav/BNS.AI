@@ -1,5 +1,5 @@
 # The name must match your Worker name in the Cloudflare dashboard
-name = "wal-ai"
+name = "bns-ai"
 main = "worker/index.js"
 compatibility_date = "2025-01-01"
 
@@ -7,4 +7,4 @@ compatibility_date = "2025-01-01"
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+run_worker_first = true
