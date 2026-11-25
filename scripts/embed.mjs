@@ -1,4 +1,4 @@
-// Builds functions/_data/sections.json (+ embeddings.json) from data/laws_sections.json
+// Builds worker/_data/sections.json (+ embeddings.json) from data/laws_sections.json
 // Runs automatically as part of `npm run build` (Cloudflare Pages build). Needs GEMINI_API_KEY as a build variable.
 import fs from 'node:fs';
 
@@ -13,14 +13,14 @@ const sections = raw.map((s) => {
   return { n, num: n.replace(/\D/g, ''), title: clean(String(s.Title || '').replace(/^\s*\d+\s*\n/, '')), desc: clean(s.Description), pun };
 });
 
-fs.mkdirSync('functions/_data', { recursive: true });
-fs.writeFileSync('functions/_data/sections.json', JSON.stringify(sections));
+fs.mkdirSync('worker/_data', { recursive: true });
+fs.writeFileSync('worker/_data/sections.json', JSON.stringify(sections));
 console.log(`sections.json written (${sections.length} sections)`);
 if (process.argv.includes('--sections-only')) process.exit(0);
 
 // Skip the API calls when an up-to-date index is already committed (delete embeddings.json to force a rebuild)
 try {
-  const current = JSON.parse(fs.readFileSync('functions/_data/embeddings.json', 'utf8'));
+  const current = JSON.parse(fs.readFileSync('worker/_data/embeddings.json', 'utf8'));
   if (current.length === sections.length) { console.log('embeddings.json is up to date, skipping.'); process.exit(0); }
 } catch { /* missing or unreadable: rebuild */ }
 
@@ -58,5 +58,5 @@ for (let i = 0; i < texts.length; i += 50) {
   console.log(`embedded ${vecs.length}/${texts.length}`);
   await sleep(1500);
 }
-fs.writeFileSync('functions/_data/embeddings.json', JSON.stringify(vecs));
+fs.writeFileSync('worker/_data/embeddings.json', JSON.stringify(vecs));
 console.log('embeddings.json written');

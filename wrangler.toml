@@ -1,3 +1,10 @@
+# The name must match your Worker name in the Cloudflare dashboard
 name = "wal-ai"
-pages_build_output_dir = "dist"
+main = "worker/index.js"
 compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]

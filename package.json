@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "wrangler pages dev dist --port 8788",
+    "dev:api": "wrangler dev --port 8788",
     "build": "node scripts/embed.mjs && vite build",
     "embed": "node scripts/embed.mjs"
   },
