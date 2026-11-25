@@ -1,8 +1,0 @@
-streamlit
-sentence-transformers
-torch
-nltk
-ddgs
-gdown
-google-generativeai
-supabase
